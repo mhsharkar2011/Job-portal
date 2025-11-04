@@ -29,7 +29,9 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Total Categories</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ $categories->total() }}</p>
+                        <p class="text-2xl font-bold text-gray-900">
+                            {{ $categories->total() }} {{-- This now works because we're using paginate() --}}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -41,7 +43,9 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Active Jobs</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ $categories->sum('active_jobs_count') }}</p>
+                        <p class="text-2xl font-bold text-gray-900">
+                            {{ $categories->sum('active_jobs_count') }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -77,7 +81,11 @@
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white"
                                              style="background-color: {{ $category->color }}">
-                                            {!! $category->icon_html !!}
+                                            @if($category->icon)
+                                                <i class="{{ $category->icon }}"></i>
+                                            @else
+                                                <i class="fa-solid fa-folder"></i>
+                                            @endif
                                         </div>
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">{{ $category->name }}</div>
@@ -88,7 +96,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $category->active_jobs_count }}</div>
+                                    <div class="text-sm text-gray-900">{{ $category->active_jobs_count ?? 0 }}</div>
                                     <div class="text-sm text-gray-500">active jobs</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

@@ -17,11 +17,6 @@ Route::get('/', function () {
 });
 
 
-Route::get('/categories', function() {
-    $categories = \App\Models\Category::all();
-    return view('categories.index', compact('categories'));
-});
-
 // In routes/web.php
 Route::get('/', function () {
     $jobs = \App\Models\Job::withCount('applications')
@@ -49,7 +44,7 @@ Route::group(['middleware' => ['auth']], function () {
 
         // Category Routes
         Route::resource('categories', CategoryController::class);
-        Route::get('/categories-browse', [CategoryController::class, 'browse'])->name('categories.browse');
+        Route::get('/categories/browse', [CategoryController::class, 'browse'])->name('categories.browse');
         Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
 
         // API Routes for categories

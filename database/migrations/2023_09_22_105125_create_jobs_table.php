@@ -11,20 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop the existing jobs table if it exists
         Schema::dropIfExists('jobs');
 
-        // Create new jobs table with proper structure
         Schema::create('jobs', function (Blueprint $table) {
             $table->id();
 
-            // User relationship
+            // Relationships
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('category_id')->nullable()->constrained()->onDelete('set null');
-
-            // Company information
-            $table->string('company_name');
-            $table->string('logo')->nullable();
 
             // Job details
             $table->string('job_title');
@@ -35,17 +30,17 @@ return new class extends Migration
             // Experience
             $table->integer('experience_minimum')->default(0);
             $table->integer('experience_maximum')->default(0);
-            $table->string('experience_unit')->default('years'); // years or months
+            $table->enum('experience_unit', ['years', 'months'])->default('years');
 
             // Job classification
             $table->string('role');
             $table->string('industry_type');
-            $table->string('employment_type'); // full-time, part-time, contract, etc.
+            $table->enum('employment_type', ['full-time', 'part-time', 'contract', 'freelance', 'internship']);
 
             // Salary information
             $table->integer('salary_minimum')->default(0);
             $table->integer('salary_maximum')->default(0);
-            $table->string('salary_currency')->default('USD');
+            $table->enum('salary_currency', ['USD', 'BDT', 'EUR', 'GBP'])->default('USD');
 
             // Skills and requirements
             $table->text('key_skills')->nullable();
@@ -59,18 +54,21 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamp('published_at')->nullable();
             $table->timestamp('expires_at')->nullable();
+            $table->timestamp('application_deadline')->nullable();
 
             // Timestamps
             $table->timestamps();
             $table->softDeletes();
 
-            // Indexes for better performance
+            // Indexes
             $table->index(['user_id', 'is_active']);
+            $table->index('company_id');
             $table->index('category_id');
             $table->index(['employment_type', 'is_active']);
             $table->index(['location', 'is_active']);
             $table->index(['published_at', 'expires_at']);
             $table->index('accepting_applications');
+            $table->index('application_deadline');
         });
     }
 
