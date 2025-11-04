@@ -27,4 +27,6 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-*.log
+# Ignore log files
+/storage/logs/*.log
+/storage/logs/laravel.log
