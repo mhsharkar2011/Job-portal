@@ -114,7 +114,19 @@ class JobController extends Controller
      */
     public function show(Job $job)
     {
-        //
+         // Eager load relationships
+        $job->load(['company', 'category', 'user', 'applications']);
+
+        // Get related jobs (same category)
+        $relatedJobs = Job::where('category_id', $job->category_id)
+            ->where('id', '!=', $job->id)
+            ->where('is_active', true)
+            ->with(['company', 'category'])
+            ->latest()
+            ->take(4)
+            ->get();
+
+        return view('jobs.show', compact('job', 'relatedJobs'));
     }
 
     /**
@@ -122,7 +134,15 @@ class JobController extends Controller
      */
     public function edit(Job $job)
     {
-        //
+        // Check if user owns the job
+        if ($job->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // $categories = Category::all();
+        // $companies = Company::where('user_id', auth()->id())->get();
+
+        return view('jobs.edit', compact('job', 'categories', 'companies'));
     }
 
     /**
@@ -152,8 +172,18 @@ class JobController extends Controller
      */
     public function destroy(Job $job)
     {
+        // Check if user owns the job
+        if ($job->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Delete logo if exists
+        if ($job->logo) {
+            Storage::delete('public/' . $job->logo);
+        }
+
         $job->delete();
 
-        return redirect()->route('jobs.appliedJob')->with('success', 'Job Deleted Successfully');
+        return redirect()->route('jobs.createdJob')->with('success', 'Job Deleted Successfully');
     }
 }

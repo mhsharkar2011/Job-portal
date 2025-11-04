@@ -62,6 +62,18 @@ class Job extends Model
         'expires_at' => 'datetime',
     ];
 
+    // In Job model
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+
     /**
      * Boot the model.
      */
@@ -134,9 +146,9 @@ class Job extends Model
     public function getIsAcceptingApplicationsAttribute(): bool
     {
         return $this->accepting_applications &&
-               $this->remaining_positions > 0 &&
-               $this->is_active &&
-               (!$this->expires_at || $this->expires_at->isFuture());
+            $this->remaining_positions > 0 &&
+            $this->is_active &&
+            (!$this->expires_at || $this->expires_at->isFuture());
     }
 
     /**
@@ -235,10 +247,10 @@ class Job extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true)
-                    ->where(function ($q) {
-                        $q->whereNull('expires_at')
-                          ->orWhere('expires_at', '>', now());
-                    });
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
     }
 
     /**
@@ -247,8 +259,8 @@ class Job extends Model
     public function scopeAcceptingApplications($query)
     {
         return $query->active()
-                    ->where('accepting_applications', true)
-                    ->whereRaw('positions_available > positions_filled');
+            ->where('accepting_applications', true)
+            ->whereRaw('positions_available > positions_filled');
     }
 
     /**
