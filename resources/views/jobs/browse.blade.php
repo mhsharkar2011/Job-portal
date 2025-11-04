@@ -9,11 +9,18 @@
                         <p class="text-gray-600 mt-2">Find your next career opportunity from our listed positions</p>
                         <div class="flex flex-wrap gap-4 mt-4">
                             <div class="bg-blue-50 px-4 py-2 rounded-lg">
-                                <span class="text-blue-800 font-semibold">{{ $jobs->count() }} Jobs Available</span>
+                                <span class="text-blue-800 font-semibold">
+                                    {{ $jobs->where('accepting_applications', true)->count() }} Jobs Accepting Applications
+                                </span>
+                            </div>
+                            <div class="bg-green-50 px-4 py-2 rounded-lg">
+                                <span class="text-green-800 font-semibold">
+                                    {{ $jobs->sum('remaining_positions') }} Total Positions Available
+                                </span>
                             </div>
                             @auth
-                                <div class="bg-green-50 px-4 py-2 rounded-lg">
-                                    <span class="text-green-800 font-semibold">Welcome, {{ auth()->user()->name }}!</span>
+                                <div class="bg-purple-50 px-4 py-2 rounded-lg">
+                                    <span class="text-purple-800 font-semibold">Welcome, {{ auth()->user()->name }}!</span>
                                 </div>
                             @endauth
                         </div>
@@ -25,7 +32,15 @@
                                 <figure class="flex flex-col p-6 rounded-lg h-full">
                                     <!-- Header Section -->
                                     <div class="mb-4 flex justify-between items-start">
-                                        <span class="bg-green-500 px-3 py-1 rounded text-white text-sm font-bold">Active</span>
+                                        @if($job->is_accepting_applications)
+                                            <span class="bg-green-500 px-3 py-1 rounded text-white text-sm font-bold">
+                                                {{ $job->remaining_positions }} Position(s)
+                                            </span>
+                                        @else
+                                            <span class="bg-red-500 px-3 py-1 rounded text-white text-sm font-bold">
+                                                Filled
+                                            </span>
+                                        @endif
                                         <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
                                             {{ $job->applications_count }} applicants
                                         </span>
@@ -74,6 +89,14 @@
                                                     <span>${{ number_format($job->salary_minimum) }} - ${{ number_format($job->salary_maximum) }}</span>
                                                 </div>
                                                 @endif
+
+                                                <!-- Positions Information -->
+                                                <div class="flex items-center text-sm {{ $job->remaining_positions > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                                    <i class="fa-solid fa-users mr-2"></i>
+                                                    <span>
+                                                        {{ $job->remaining_positions }} of {{ $job->positions_available }} positions available
+                                                    </span>
+                                                </div>
                                             </div>
 
                                             <!-- Key Skills -->
@@ -115,25 +138,38 @@
                                                         <i class="fa-solid fa-check mr-2"></i>
                                                         Applied
                                                     </button>
-                                                @else
+                                                @elseif($job->is_accepting_applications)
                                                     <a href="{{ route('applications.create', $job) }}"
                                                        class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
                                                         <i class="fa-solid fa-paper-plane mr-2"></i>
                                                         Apply Now
                                                     </a>
+                                                @else
+                                                    <button class="flex items-center px-4 py-2 bg-red-100 text-red-700 rounded-lg cursor-not-allowed" disabled>
+                                                        <i class="fa-solid fa-times mr-2"></i>
+                                                        Position Filled
+                                                    </button>
                                                 @endif
                                             @else
-                                                <button class="flex items-center px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed" disabled>
+                                                <a href="{{ route('jobs.show', $job) }}"
+                                                   class="flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200">
                                                     <i class="fa-solid fa-eye mr-2"></i>
                                                     View Job
-                                                </button>
+                                                </a>
                                             @endif
                                         @else
-                                            <a href="{{ route('login') }}"
-                                               class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
-                                                <i class="fa-solid fa-paper-plane mr-2"></i>
-                                                Apply Now
-                                            </a>
+                                            @if($job->is_accepting_applications)
+                                                <a href="{{ route('login') }}"
+                                                   class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
+                                                    <i class="fa-solid fa-paper-plane mr-2"></i>
+                                                    Apply Now
+                                                </a>
+                                            @else
+                                                <button class="flex items-center px-4 py-2 bg-red-100 text-red-700 rounded-lg cursor-not-allowed" disabled>
+                                                    <i class="fa-solid fa-times mr-2"></i>
+                                                    Position Filled
+                                                </a>
+                                            @endif
                                         @endauth
 
                                         <!-- Quick Actions -->
@@ -179,7 +215,6 @@
     @push('scripts')
     <script>
         function saveJob(jobId) {
-            // Implement save job functionality
             fetch(`/jobs/${jobId}/save`, {
                 method: 'POST',
                 headers: {
@@ -190,7 +225,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Show success message
                     alert('Job saved successfully!');
                 }
             })

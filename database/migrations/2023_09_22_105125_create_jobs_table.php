@@ -11,26 +11,64 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Drop the existing jobs table if it exists
+        Schema::dropIfExists('jobs');
+
+        // Create new jobs table with proper structure
         Schema::create('jobs', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name')->nullable();
-            $table->string('job_title')->nullable();
-            $table->string('job_description')->nullable();
-            $table->string('requirement')->nullable();
-            $table->string('location')->nullable();
-            $table->tinyInteger('experience_minimum')->nullable();
-            $table->tinyInteger('experience_maximum')->nullable();
-            $table->date('experience_month')->nullable();
-            $table->tinyText('role')->nullable();
-            $table->string('Industry_type')->nullable();
-            $table->string('employment_type')->nullable();
+
+            // User relationship
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+
+            // Company information
+            $table->string('company_name');
             $table->string('logo')->nullable();
-            $table->integer('salary_minimum')->nullable();
-            $table->integer('salary_maximum')->nullable();
-            $table->tinyText('salary_currency')->nullable();
-            $table->string('key_skills')->nullable();
+
+            // Job details
+            $table->string('job_title');
+            $table->text('job_description');
+            $table->text('requirement');
+            $table->string('location');
+
+            // Experience
+            $table->integer('experience_minimum')->default(0);
+            $table->integer('experience_maximum')->default(0);
+            $table->string('experience_unit')->default('years'); // years or months
+
+            // Job classification
+            $table->string('role');
+            $table->string('industry_type');
+            $table->string('employment_type'); // full-time, part-time, contract, etc.
+
+            // Salary information
+            $table->integer('salary_minimum')->default(0);
+            $table->integer('salary_maximum')->default(0);
+            $table->string('salary_currency')->default('USD');
+
+            // Skills and requirements
+            $table->text('key_skills')->nullable();
+
+            // Position management
+            $table->integer('positions_available')->default(1);
+            $table->integer('positions_filled')->default(0);
+            $table->boolean('accepting_applications')->default(true);
+
+            // Job status
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('published_at')->nullable();
+            $table->timestamp('expires_at')->nullable();
+
+            // Timestamps
             $table->timestamps();
             $table->softDeletes();
+
+            // Indexes for better performance
+            $table->index(['user_id', 'is_active']);
+            $table->index(['employment_type', 'is_active']);
+            $table->index(['location', 'is_active']);
+            $table->index(['published_at', 'expires_at']);
+            $table->index('accepting_applications');
         });
     }
 
