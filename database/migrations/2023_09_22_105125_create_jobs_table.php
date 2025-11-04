@@ -20,6 +20,7 @@ return new class extends Migration
 
             // User relationship
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('category_id')->nullable()->constrained()->onDelete('set null');
 
             // Company information
             $table->string('company_name');
@@ -65,6 +66,7 @@ return new class extends Migration
 
             // Indexes for better performance
             $table->index(['user_id', 'is_active']);
+            $table->index('category_id');
             $table->index(['employment_type', 'is_active']);
             $table->index(['location', 'is_active']);
             $table->index(['published_at', 'expires_at']);
