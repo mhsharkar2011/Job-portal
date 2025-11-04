@@ -14,24 +14,12 @@
                         <table class="w-full text-sm text-left text-gray-700">
                             <thead class="text-sm text-gray-800 uppercase bg-gray-50 border-b">
                                 <tr>
-                                    <th scope="col" class="px-6 py-4 font-semibold">
-                                        #
-                                    </th>
-                                    <th scope="col" class="px-6 py-4 font-semibold">
-                                        Company Name
-                                    </th>
-                                    <th scope="col" class="px-6 py-4 font-semibold">
-                                        Job Title
-                                    </th>
-                                    <th scope="col" class="px-6 py-4 font-semibold">
-                                        Applicants
-                                    </th>
-                                    <th scope="col" class="px-6 py-4 font-semibold">
-                                        Date Posted
-                                    </th>
-                                    <th scope="col" class="px-6 py-4 font-semibold text-center">
-                                        Actions
-                                    </th>
+                                    <th scope="col" class="px-6 py-4 font-semibold">#</th>
+                                    <th scope="col" class="px-6 py-4 font-semibold">Company Name</th>
+                                    <th scope="col" class="px-6 py-4 font-semibold">Job Title</th>
+                                    <th scope="col" class="px-6 py-4 font-semibold">Applicants</th>
+                                    <th scope="col" class="px-6 py-4 font-semibold">Date Posted</th>
+                                    <th scope="col" class="px-6 py-4 font-semibold text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -48,8 +36,7 @@
                                                         alt="{{ $job->company_name }} logo"
                                                         class="w-8 h-8 rounded-full object-cover">
                                                 @else
-                                                    <div
-                                                        class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                                                         <span class="text-xs font-medium text-gray-500">
                                                             {{ substr($job->company_name, 0, 1) }}
                                                         </span>
@@ -66,8 +53,7 @@
                                         <td class="px-6 py-4">
                                             <a href="{{ route('jobs.applicants', $job) }}"
                                                 class="flex items-center space-x-2 text-blue-600 hover:text-blue-900 transition-colors duration-200">
-                                                <span
-                                                    class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                                                <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
                                                     {{ $job->applications_count }}
                                                 </span>
                                                 <span class="text-sm">View Applicants</span>
@@ -135,12 +121,12 @@
                         </div>
                     @endif
 
-                    {{-- <!-- Pagination -->
-                    @if ($jobs->hasPages())
+                    <!-- Pagination -->
+                    @if(method_exists($jobs, 'hasPages') && $jobs->hasPages())
                         <div class="mt-6">
                             {{ $jobs->links() }}
                         </div>
-                    @endif --}}
+                    @endif
                 </div>
             </div>
         </div>
