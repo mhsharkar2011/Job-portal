@@ -5,13 +5,18 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    {{-- <a href="{{ route('dashboard') }}">
+                    <a href="{{ route('dashboard') }}">
                        <h1 class="text-3xl font-bold text-gray-400">Job <span class="text-blue-600 dark:text-blue-500">Portal</span> </h1>
-                    </a> --}}
+                    </a>
 
-                    <a href="{{ route('dashboard') }}"
+                    <a href="{{ route('categories.index') }}"
                         class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                        Dashboard
+                        Create Job Category
+                    </a>
+
+                    <a href="{{ route('companies.index') }}"
+                        class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        Create Company
                     </a>
                 </div>
 

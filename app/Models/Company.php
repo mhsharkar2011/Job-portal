@@ -62,6 +62,17 @@ class Company extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    // If you keep the industry field but want to sync with categories
+    public function getIndustryCategoryAttribute()
+    {
+        return Category::where('name', $this->industry)->first();
+    }
+
     /**
      * Get the jobs for the company.
      */

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,12 +16,13 @@ class CompanyController extends Controller
      */
     public function index()
     {
+        $totalCompanies = Company::count('is_active');
         $companies = Company::with(['user', 'jobs'])
             ->active()
             ->latest()
             ->paginate(12);
 
-        return view('companies.index', compact('companies'));
+        return view('companies.index', compact('companies','totalCompanies'));
     }
 
     /**
@@ -28,7 +30,9 @@ class CompanyController extends Controller
      */
     public function create()
     {
-        return view('companies.create');
+        $categories = Category::active()->ordered()->get();
+
+        return view('companies.create',compact('categories'));
     }
 
     /**
@@ -103,11 +107,13 @@ class CompanyController extends Controller
     public function edit(Company $company)
     {
         // Authorization check - user must own the company
-        if ($company->user_id !== Auth::id()) {
+        if ($company->user_id !== 1) {
             abort(403, 'Unauthorized action.');
         }
 
-        return view('companies.edit', compact('company'));
+        $categories = Category::active()->ordered()->get();
+
+        return view('companies.edit', compact('company','categories'));
     }
 
     /**

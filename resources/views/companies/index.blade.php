@@ -12,7 +12,7 @@
                     <div class="mb-8">
                         <div class="flex justify-between items-center">
                             <div>
-                                <h1 class="text-3xl font-bold text-gray-900 mb-2">Companies</h1>
+                                <h1 class="text-3xl font-bold text-gray-900 mb-2">Total Companies ( {{ $totalCompanies }} ) <span class="text-green-500"> Active</span> </h1>
                                 <p class="text-gray-600">Discover amazing companies hiring right now</p>
                             </div>
                             @auth
