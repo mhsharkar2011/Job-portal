@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', config('app.name', 'Laravel'))</title>
+    <title>@yield('title', config('app.name', 'Job Portal'))</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -26,38 +26,61 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+
+        /* Smooth transitions */
+        .transition-all {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Better focus states */
+        .focus-ring:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
     </style>
 
     @stack('styles')
 </head>
 
-<body class="font-sans antialiased">
-
+<body class="font-sans antialiased bg-gray-50">
+    <!-- Navigation -->
     @include('layouts.navigation')
 
-    @if (!Request::is('/'))
-        @include('layouts.side-bar')
-    @endif
+    <!-- Main Layout -->
+    <div class="flex">
+        <!-- Sidebar - Only show on job browsing pages -->
+        @include('layouts.sidebar')
+        {{-- @if(request()->is('jobs/browse') || request()->is('jobs') && !request()->is('jobs/*/edit') && !request()->is('jobs/create'))
+        @endif --}}
 
-    <!-- Page Content -->
-    <main class="{{ !Request::is('/') ? 'ml-64' : '' }}">
-        @if(isset($slot))
-            {{ $slot }}
-        @else
-            @yield('content')
-        @endif
-    </main>
+        <!-- Main Content -->
+        <main class="flex-1 min-h-screen">
+            @if(isset($slot))
+                {{ $slot }}
+            @else
+                @yield('content')
+            @endif
+        </main>
+    </div>
 
     <!-- Footer -->
-    <footer class="bg-white border-t mt-12 {{ !Request::is('/') ? 'ml-64' : '' }}">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <p class="text-center text-gray-500 text-sm">
+    <footer class="bg-white border-t mt-12">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-gray-500 text-sm">
                 &copy; {{ date('Y') }} {{ config('app.name', 'JobPortal') }}. All rights reserved.
-            </p>
+            </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
     @stack('scripts')
 </body>
 

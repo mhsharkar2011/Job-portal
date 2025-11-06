@@ -42,9 +42,10 @@
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <i class="fas fa-briefcase text-2xl text-blue-600 mr-2"></i>
+                         <a href="{{ route('home') }}">
+                       <h1 class="text-3xl font-bold text-gray-400">Job <span class="text-blue-600 dark:text-blue-500">Portal</span> </h1>
+                    </a>
                     </div>
-                    <div class="text-xl font-bold text-gray-900">{{ config('app.name', 'JobPortal') }}</div>
                 </div>
 
                 <div class="hidden md:block">

@@ -38,7 +38,7 @@ class JobController extends Controller
     {
         $categories = Category::active()->ordered()->get();
         $companies = Company::where('user_id', auth()->id())->get();
-        return view('jobs.post-job',compact('categories','companies'));
+        return view('jobs.post-job', compact('categories', 'companies'));
     }
 
     /**
@@ -115,24 +115,95 @@ class JobController extends Controller
         return view('jobs.show', compact('job', 'relatedJobs'));
     }
 
-      /**
+    /**
      * Display jobs listing for job seekers to apply
      */
-    public function browse()
+    public function browse(Request $request)
     {
-        $jobs = Job::withCount('applications')
-            ->with(['applications' => function ($query) {
-                if (auth()->check()) {
-                    $query->where('user_id', auth()->id());
-                }
-            }])
-            ->latest()
-            ->paginate(12);
+        $query = Job::with(['company', 'category'])
+            ->active()
+            ->withCount('applications');
 
-        return view('jobs.browse', compact('jobs'));
+        // Apply filters (your existing filter logic)
+        if ($request->has('search') && $request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('job_title', 'like', '%' . $request->search . '%')
+                    ->orWhere('job_description', 'like', '%' . $request->search . '%')
+                    ->orWhere('key_skills', 'like', '%' . $request->search . '%')
+                    ->orWhereHas('company', function ($q) use ($request) {
+                        $q->where('name', 'like', '%' . $request->search . '%');
+                    });
+            });
+        }
+
+        // ... rest of your filter logic
+
+        // Apply sorting
+        switch ($request->get('sort', 'newest')) {
+            case 'salary_high':
+                $query->orderByRaw('(salary_minimum + salary_maximum) / 2 DESC');
+                break;
+            case 'salary_low':
+                $query->orderBy('salary_minimum', 'ASC');
+                break;
+            case 'deadline':
+                $query->orderBy('application_deadline', 'ASC');
+                break;
+            case 'newest':
+            default:
+                $query->latest();
+                break;
+        }
+
+        $jobs = $query->paginate(12);
+
+        // Get featured jobs (only if column exists)
+        try {
+            $featuredJobs = Job::with('company')
+                ->active()
+                ->where(function ($query) {
+                    // Temporary: Use high salary jobs as featured until migration is run
+                    $query->where('salary_minimum', '>=', 80000)
+                        ->orWhereHas('company', function ($q) {
+                            $q->where('is_verified', true);
+                        });
+                })
+                ->latest()
+                ->take(3)
+                ->get();
+        } catch (\Exception $e) {
+            // Fallback if is_featured column doesn't exist yet
+            $featuredJobs = collect();
+        }
+
+        // Get popular categories
+        $popularCategories = Category::active()
+            ->withCount(['jobs' => function ($query) {
+                $query->active();
+            }])
+            ->orderBy('jobs_count', 'desc')
+            ->take(5)
+            ->get();
+
+        // Get counts
+        $remoteJobsCount = Job::active()->where('location', 'like', '%remote%')->count();
+
+        try {
+            $featuredJobsCount = Job::active()->featured()->count();
+        } catch (\Exception $e) {
+            $featuredJobsCount = 0;
+        }
+
+        return view('jobs.browse', compact(
+            'jobs',
+            'featuredJobs',
+            'popularCategories',
+            'remoteJobsCount',
+            'featuredJobsCount'
+        ));
     }
 
-    
+
     /**
      * Show the form for editing the specified resource.
      */

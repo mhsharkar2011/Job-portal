@@ -11,10 +11,10 @@ use App\Http\Controllers\ResumeController;
 use App\Models\Job;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+Route::get('/home', function () {
     $data['jobs'] = Job::all();
     return view('welcome', $data);
-});
+})->name('home');
 
 
 // In routes/web.php

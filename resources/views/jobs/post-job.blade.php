@@ -68,7 +68,7 @@
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-                        
+
                         <!-- Job Title -->
                         <div class="mb-6">
                             <label for="job_title" class="block mb-2 text-sm font-medium text-gray-700">

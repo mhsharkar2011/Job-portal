@@ -35,6 +35,9 @@ class Job extends Model
         'published_at',
         'expires_at',
         'application_deadline',
+        'is_featured',
+        'is_urgent',
+        'featured_until',
     ];
 
     protected $casts = [
@@ -49,6 +52,9 @@ class Job extends Model
         'published_at' => 'datetime',
         'expires_at' => 'datetime',
         'application_deadline' => 'datetime',
+        'is_featured' => 'boolean',
+        'is_urgent' => 'boolean',
+        'featured_until' => 'datetime',
     ];
 
     /**
@@ -89,11 +95,11 @@ class Job extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true)
-                    ->where('accepting_applications', true)
-                    ->where(function($q) {
-                        $q->whereNull('expires_at')
-                          ->orWhere('expires_at', '>', now());
-                    });
+            ->where('accepting_applications', true)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            });
     }
 
     /**
@@ -102,7 +108,36 @@ class Job extends Model
     public function scopePublished($query)
     {
         return $query->whereNotNull('published_at')
-                    ->where('published_at', '<=', now());
+            ->where('published_at', '<=', now());
+    }
+    /**
+     * Scope a query to only include featured jobs.
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true)
+            ->where(function ($q) {
+                $q->whereNull('featured_until')
+                    ->orWhere('featured_until', '>', now());
+            });
+    }
+    /**
+     * Scope a query to only include urgent jobs.
+     */
+    public function scopeUrgent($query)
+    {
+        return $query->where('is_urgent', true);
+    }
+
+    /**
+     * Check if job is still featured.
+     */
+    public function getIsCurrentlyFeaturedAttribute()
+    {
+        if (!$this->is_featured) return false;
+        if ($this->featured_until && $this->featured_until->isPast()) return false;
+
+        return true;
     }
 
     /**
