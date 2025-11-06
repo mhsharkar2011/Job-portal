@@ -23,27 +23,60 @@
                     <form action="{{ route('jobs.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
-                        <!-- Company Name -->
+                        <!-- Industry -->
+                        <div>
+                            <label for="company_id" class="block text-sm font-medium text-gray-700 mb-2">Industry
+                                *</label>
+                            <select id="company_id" name="company_id"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('company_id') border-red-500 @enderror"
+                                required>
+                                <option value="">Select Industry</option>
+                                @foreach ($companies as $company)
+                                    <option value="{{ $company->id }}"
+                                        {{ old('company_id', $company->industry ?? '') == $company->name ? 'selected' : '' }}>
+                                        {{ $company->name }}
+                                    </option>
+                                @endforeach
+                                <!-- Keep "Other" option for custom industries -->
+                                <option value="Other"
+                                    {{ old('industry', $company->industry ?? '') == 'Other' ? 'selected' : '' }}>Other
+                                </option>
+                            </select>
+                            @error('industry')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+
+                            <!-- Show custom industry input if "Other" is selected -->
+                            <div id="custom_industry_container" class="mt-4 hidden">
+                                <label for="custom_industry" class="block text-sm font-medium text-gray-700 mb-2">Custom
+                                    Industry</label>
+                                <input type="text" id="custom_industry" name="custom_industry"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Enter your industry">
+                            </div>
+                        </div>
+
+                         <!-- Industry Type -->
                         <div class="mb-6">
-                            <label for="company_name" class="block mb-2 text-sm font-medium text-gray-700">
-                                Company Name <span class="text-red-500">*</span>
+                            <label for="industry_type" class="block mb-2 text-sm font-medium text-gray-700">
+                                Industry Type <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="company_name" id="company_name"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   value="{{ old('company_name') }}" required>
-                            @error('company_name')
+                            <input type="text" name="industry_type" id="industry_type"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                value="{{ old('industry_type') }}" required>
+                            @error('industry_type')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
-
+                        
                         <!-- Job Title -->
                         <div class="mb-6">
                             <label for="job_title" class="block mb-2 text-sm font-medium text-gray-700">
                                 Job Title <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="job_title" id="job_title"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   value="{{ old('job_title') }}" required>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                value="{{ old('job_title') }}" required>
                             @error('job_title')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -55,8 +88,8 @@
                                 Job Description <span class="text-red-500">*</span>
                             </label>
                             <textarea name="job_description" id="job_description" rows="4"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                      required>{{ old('job_description') }}</textarea>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>{{ old('job_description') }}</textarea>
                             @error('job_description')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -68,8 +101,8 @@
                                 Requirements <span class="text-red-500">*</span>
                             </label>
                             <textarea name="requirement" id="requirement" rows="4"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                      required>{{ old('requirement') }}</textarea>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>{{ old('requirement') }}</textarea>
                             @error('requirement')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -81,8 +114,8 @@
                                 Location <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="location" id="location"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   value="{{ old('location') }}" required>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                value="{{ old('location') }}" required>
                             @error('location')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -95,8 +128,8 @@
                                     Min Experience <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="experience_minimum" id="experience_minimum"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       value="{{ old('experience_minimum') }}" min="0" required>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    value="{{ old('experience_minimum') }}" min="0" required>
                                 @error('experience_minimum')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -106,8 +139,8 @@
                                     Max Experience <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="experience_maximum" id="experience_maximum"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       value="{{ old('experience_maximum') }}" min="0" required>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    value="{{ old('experience_maximum') }}" min="0" required>
                                 @error('experience_maximum')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -117,10 +150,13 @@
                                     Experience Unit <span class="text-red-500">*</span>
                                 </label>
                                 <select name="experience_unit" id="experience_unit"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    required>
                                     <option value="">Select Unit</option>
-                                    <option value="years" {{ old('experience_unit') == 'years' ? 'selected' : '' }}>Years</option>
-                                    <option value="months" {{ old('experience_unit') == 'months' ? 'selected' : '' }}>Months</option>
+                                    <option value="years" {{ old('experience_unit') == 'years' ? 'selected' : '' }}>
+                                        Years</option>
+                                    <option value="months" {{ old('experience_unit') == 'months' ? 'selected' : '' }}>
+                                        Months</option>
                                 </select>
                                 @error('experience_unit')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -134,22 +170,9 @@
                                 Role <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="role" id="role"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   value="{{ old('role') }}" required>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                value="{{ old('role') }}" required>
                             @error('role')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Industry Type -->
-                        <div class="mb-6">
-                            <label for="industry_type" class="block mb-2 text-sm font-medium text-gray-700">
-                                Industry Type <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="industry_type" id="industry_type"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   value="{{ old('industry_type') }}" required>
-                            @error('industry_type')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
@@ -160,8 +183,8 @@
                                 Number of Positions Available <span class="text-red-500">*</span>
                             </label>
                             <input type="number" name="positions_available" id="positions_available"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   value="{{ old('positions_available', 1) }}" min="1" required>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                value="{{ old('positions_available', 1) }}" min="1" required>
                             @error('positions_available')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -174,8 +197,8 @@
                                     Minimum Salary <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="salary_minimum" id="salary_minimum"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       value="{{ old('salary_minimum') }}" required>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    value="{{ old('salary_minimum') }}" required>
                                 @error('salary_minimum')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -185,8 +208,8 @@
                                     Maximum Salary <span class="text-red-500">*</span>
                                 </label>
                                 <input type="number" name="salary_maximum" id="salary_maximum"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                       value="{{ old('salary_maximum') }}" required>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    value="{{ old('salary_maximum') }}" required>
                                 @error('salary_maximum')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
@@ -196,12 +219,17 @@
                                     Currency <span class="text-red-500">*</span>
                                 </label>
                                 <select name="salary_currency" id="salary_currency"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    required>
                                     <option value="">Select Currency</option>
-                                    <option value="USD" {{ old('salary_currency') == 'USD' ? 'selected' : '' }}>USD ($)</option>
-                                    <option value="BDT" {{ old('salary_currency') == 'BDT' ? 'selected' : '' }}>BDT (৳)</option>
-                                    <option value="EUR" {{ old('salary_currency') == 'EUR' ? 'selected' : '' }}>EUR (€)</option>
-                                    <option value="GBP" {{ old('salary_currency') == 'GBP' ? 'selected' : '' }}>GBP (£)</option>
+                                    <option value="BDT" {{ old('salary_currency') == 'BDT' ? 'selected' : '' }}>BDT
+                                        (৳)</option>
+                                    <option value="USD" {{ old('salary_currency') == 'USD' ? 'selected' : '' }}>USD
+                                        ($)</option>
+                                    <option value="EUR" {{ old('salary_currency') == 'EUR' ? 'selected' : '' }}>EUR
+                                        (€)</option>
+                                    <option value="GBP" {{ old('salary_currency') == 'GBP' ? 'selected' : '' }}>GBP
+                                        (£)</option>
                                 </select>
                                 @error('salary_currency')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -215,13 +243,19 @@
                                 Employment Type <span class="text-red-500">*</span>
                             </label>
                             <select name="employment_type" id="employment_type"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>
                                 <option value="">Select Employment Type</option>
-                                <option value="full-time" {{ old('employment_type') == 'full-time' ? 'selected' : '' }}>Full Time</option>
-                                <option value="part-time" {{ old('employment_type') == 'part-time' ? 'selected' : '' }}>Part Time</option>
-                                <option value="contract" {{ old('employment_type') == 'contract' ? 'selected' : '' }}>Contract</option>
-                                <option value="freelance" {{ old('employment_type') == 'freelance' ? 'selected' : '' }}>Freelance</option>
-                                <option value="internship" {{ old('employment_type') == 'internship' ? 'selected' : '' }}>Internship</option>
+                                <option value="full-time"
+                                    {{ old('employment_type') == 'full-time' ? 'selected' : '' }}>Full Time</option>
+                                <option value="part-time"
+                                    {{ old('employment_type') == 'part-time' ? 'selected' : '' }}>Part Time</option>
+                                <option value="contract" {{ old('employment_type') == 'contract' ? 'selected' : '' }}>
+                                    Contract</option>
+                                <option value="freelance"
+                                    {{ old('employment_type') == 'freelance' ? 'selected' : '' }}>Freelance</option>
+                                <option value="internship"
+                                    {{ old('employment_type') == 'internship' ? 'selected' : '' }}>Internship</option>
                             </select>
                             @error('employment_type')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -234,9 +268,10 @@
                                 Key Skills <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="key_skills" id="key_skills"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   value="{{ old('key_skills') }}"
-                                   placeholder="Enter skills separated by commas (e.g., PHP, Laravel, JavaScript)" required>
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                value="{{ old('key_skills') }}"
+                                placeholder="Enter skills separated by commas (e.g., PHP, Laravel, JavaScript)"
+                                required>
                             @error('key_skills')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -248,13 +283,14 @@
                                 Company Logo
                             </label>
                             <input type="file" name="logo" id="logo"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                             @error('logo')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200">
+                        <button type="submit"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200">
                             Post Job
                         </button>
                     </form>
@@ -263,3 +299,31 @@
         </div>
     </div>
 </x-app-layout>
+
+
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const industrySelect = document.getElementById('industry');
+            const customIndustryContainer = document.getElementById('custom_industry_container');
+            const customIndustryInput = document.getElementById('custom_industry');
+
+            function toggleCustomIndustry() {
+                if (industrySelect.value === 'Other') {
+                    customIndustryContainer.classList.remove('hidden');
+                    customIndustryInput.setAttribute('required', 'required');
+                } else {
+                    customIndustryContainer.classList.add('hidden');
+                    customIndustryInput.removeAttribute('required');
+                    customIndustryInput.value = '';
+                }
+            }
+
+            industrySelect.addEventListener('change', toggleCustomIndustry);
+
+            // Initialize on page load
+            toggleCustomIndustry();
+        });
+    </script>
+@endpush

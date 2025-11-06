@@ -31,24 +31,6 @@ class JobController extends Controller
         return view('jobs.index', compact('jobs'));
     }
 
-
-    /**
-     * Display jobs listing for job seekers to apply
-     */
-    public function browse()
-    {
-        $jobs = Job::withCount('applications')
-            ->with(['applications' => function ($query) {
-                if (auth()->check()) {
-                    $query->where('user_id', auth()->id());
-                }
-            }])
-            ->latest()
-            ->paginate(12);
-
-        return view('jobs.browse', compact('jobs'));
-    }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -133,6 +115,24 @@ class JobController extends Controller
         return view('jobs.show', compact('job', 'relatedJobs'));
     }
 
+      /**
+     * Display jobs listing for job seekers to apply
+     */
+    public function browse()
+    {
+        $jobs = Job::withCount('applications')
+            ->with(['applications' => function ($query) {
+                if (auth()->check()) {
+                    $query->where('user_id', auth()->id());
+                }
+            }])
+            ->latest()
+            ->paginate(12);
+
+        return view('jobs.browse', compact('jobs'));
+    }
+
+    
     /**
      * Show the form for editing the specified resource.
      */
