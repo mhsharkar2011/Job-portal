@@ -119,7 +119,7 @@ class JobController extends Controller
     // Created Job for UI
     public function created()
     {
-        $jobs = Job::all();
+        $jobs = Job::with('company')->get();
         return view('jobs.created-job', compact('jobs'));
     }
 

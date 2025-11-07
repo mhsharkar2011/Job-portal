@@ -21,11 +21,13 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         @foreach ($jobs as $job)
-                            <div class="transition-all duration-300 hover:scale-105 border border-gray-200 rounded-lg shadow-sm hover:shadow-lg bg-white">
+                            <div
+                                class="transition-all duration-300 hover:scale-105 border border-gray-200 rounded-lg shadow-sm hover:shadow-lg bg-white">
                                 <figure class="flex flex-col p-6 rounded-lg h-full">
                                     <!-- Header Section -->
                                     <div class="mb-4 flex justify-between items-start">
-                                        <span class="bg-green-500 px-3 py-1 rounded text-white text-sm font-bold">Active</span>
+                                        <span
+                                            class="bg-green-500 px-3 py-1 rounded text-white text-sm font-bold">Active</span>
                                         <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
                                             {{ $job->applications_count }} applicants
                                         </span>
@@ -34,29 +36,32 @@
                                     <!-- Company Logo and Name -->
                                     <div class="flex items-center mb-4">
                                         <div class="flex-shrink-0 mr-3">
-                                            @if($job->logo)
-                                                <img src="{{ asset('storage/' . $job->logo) }}"
-                                                     alt="{{ $job->company_name }} logo"
-                                                     class="rounded h-10 w-10 object-cover border border-gray-200">
+                                            @if ($job->company->logo)
+                                                <img src="{{ $job->company->logo_url }}" alt="{{ $job->company->name }} logo"
+                                                    class="w-16 h-16 rounded-lg object-cover border mr-4">
                                             @else
-                                                <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center border border-gray-300">
-                                                    <span class="text-sm font-medium text-gray-600">
-                                                        {{ substr($job->company_name, 0, 1) }}
-                                                    </span>
+                                                <div
+                                                    class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center mr-4">
+                                                    <i class="fa-solid fa-building text-gray-400 text-xl"></i>
                                                 </div>
                                             @endif
                                         </div>
-                                        <div>
-                                            <h3 class="text-sm font-semibold text-gray-900">{{ $job->company_name }}</h3>
-                                            <p class="text-xs text-gray-500">{{ $job->location }}</p>
+                                        <div class="min-w-0 flex-1">
+                                            <h3 class="text-sm font-semibold text-gray-900 truncate">
+                                                {{ $job->company->name ?? ($job->company_name ?? 'Company Not Specified') }}
+                                            </h3>
+                                            <p class="text-xs text-gray-500 truncate">
+                                                {{ $job->location ?? 'Location not specified' }}</p>
                                         </div>
                                     </div>
 
                                     <!-- Job Details Section -->
                                     <div class="flex-grow">
                                         <div class="mb-4">
-                                            <h2 class="text-lg font-bold text-gray-800 line-clamp-2 mb-2">{{ $job->job_title }}</h2>
-                                            <p class="text-sm text-gray-600 line-clamp-3 mb-3">{{ Str::limit($job->job_description, 100) }}</p>
+                                            <h2 class="text-lg font-bold text-gray-800 line-clamp-2 mb-2">
+                                                {{ $job->job_title }}</h2>
+                                            <p class="text-sm text-gray-600 line-clamp-3 mb-3">
+                                                {{ Str::limit($job->job_description, 100) }}</p>
 
                                             <!-- Job Meta Information -->
                                             <div class="space-y-2 mb-4">
@@ -68,25 +73,28 @@
                                                     <i class="fa-solid fa-briefcase mr-2 text-gray-400"></i>
                                                     <span>{{ $job->employment_type }}</span>
                                                 </div>
-                                                @if($job->salary_minimum && $job->salary_maximum)
-                                                <div class="flex items-center text-sm text-gray-600">
-                                                    <i class="fa-solid fa-money-bill-wave mr-2 text-gray-400"></i>
-                                                    <span>${{ number_format($job->salary_minimum) }} - ${{ number_format($job->salary_maximum) }}</span>
-                                                </div>
+                                                @if ($job->salary_minimum && $job->salary_maximum)
+                                                    <div class="flex items-center text-sm text-gray-600">
+                                                        <i class="fa-solid fa-money-bill-wave mr-2 text-gray-400"></i>
+                                                        <span>${{ number_format($job->salary_minimum) }} -
+                                                            ${{ number_format($job->salary_maximum) }}</span>
+                                                    </div>
                                                 @endif
                                             </div>
 
                                             <!-- Key Skills -->
-                                            @if($job->key_skills)
+                                            @if ($job->key_skills)
                                                 <div class="mb-4">
                                                     <div class="flex flex-wrap gap-1">
-                                                        @foreach(array_slice(explode(',', $job->key_skills), 0, 3) as $skill)
-                                                            <span class="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+                                                        @foreach (array_slice(explode(',', $job->key_skills), 0, 3) as $skill)
+                                                            <span
+                                                                class="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
                                                                 {{ trim($skill) }}
                                                             </span>
                                                         @endforeach
-                                                        @if(count(explode(',', $job->key_skills)) > 3)
-                                                            <span class="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs">
+                                                        @if (count(explode(',', $job->key_skills)) > 3)
+                                                            <span
+                                                                class="inline-block bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs">
                                                                 +{{ count(explode(',', $job->key_skills)) - 3 }} more
                                                             </span>
                                                         @endif
@@ -108,29 +116,33 @@
                                     <div class="flex justify-between items-center pt-4 border-t border-gray-100">
                                         <!-- Apply Button -->
                                         @auth
-                                            @if(auth()->user()->role === 'job_seeker')
+                                            @if (auth()->user()->role === 'job_seeker')
                                                 <!-- Check if user already applied -->
-                                                @if($job->applications->where('user_id', auth()->id())->count() > 0)
-                                                    <button class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg cursor-not-allowed" disabled>
+                                                @if ($job->applications->where('user_id', auth()->id())->count() > 0)
+                                                    <button
+                                                        class="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-lg cursor-not-allowed"
+                                                        disabled>
                                                         <i class="fa-solid fa-check mr-2"></i>
                                                         Applied
                                                     </button>
                                                 @else
                                                     <a href="{{ route('applications.create', $job) }}"
-                                                       class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
+                                                        class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
                                                         <i class="fa-solid fa-paper-plane mr-2"></i>
                                                         Apply Now
                                                     </a>
                                                 @endif
                                             @else
-                                                <button class="flex items-center px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed" disabled>
+                                                <button
+                                                    class="flex items-center px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed"
+                                                    disabled>
                                                     <i class="fa-solid fa-eye mr-2"></i>
                                                     View Job
                                                 </button>
                                             @endif
                                         @else
                                             <a href="{{ route('login') }}"
-                                               class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
+                                                class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
                                                 <i class="fa-solid fa-paper-plane mr-2"></i>
                                                 Apply Now
                                             </a>
@@ -138,13 +150,14 @@
 
                                         <!-- Quick Actions -->
                                         <div class="flex space-x-2">
-                                            <button class="text-gray-400 hover:text-blue-500 p-2 transition-all duration-300 hover:scale-110"
-                                                    title="Save Job"
-                                                    onclick="saveJob({{ $job->id }})">
+                                            <button
+                                                class="text-gray-400 hover:text-blue-500 p-2 transition-all duration-300 hover:scale-110"
+                                                title="Save Job" onclick="saveJob({{ $job->id }})">
                                                 <i class="fa-regular fa-bookmark"></i>
                                             </button>
-                                            <button class="text-gray-400 hover:text-green-500 p-2 transition-all duration-300 hover:scale-110"
-                                                    title="Share Job">
+                                            <button
+                                                class="text-gray-400 hover:text-green-500 p-2 transition-all duration-300 hover:scale-110"
+                                                title="Share Job">
                                                 <i class="fa-solid fa-share-nodes"></i>
                                             </button>
                                         </div>
@@ -155,7 +168,7 @@
                     </div>
 
                     <!-- Empty State -->
-                    @if($jobs->count() === 0)
+                    @if ($jobs->count() === 0)
                         <div class="text-center py-12">
                             <div class="text-gray-400 mb-4">
                                 <i class="fa-solid fa-briefcase text-6xl"></i>
@@ -166,7 +179,7 @@
                     @endif
 
                     <!-- Pagination -->
-                    @if(method_exists($jobs, 'hasPages') && $jobs->hasPages())
+                    @if (method_exists($jobs, 'hasPages') && $jobs->hasPages())
                         <div class="mt-8">
                             {{ $jobs->links() }}
                         </div>
@@ -177,27 +190,27 @@
     </div>
 
     @push('scripts')
-    <script>
-        function saveJob(jobId) {
-            // Implement save job functionality
-            fetch(`/jobs/${jobId}/save`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success message
-                    alert('Job saved successfully!');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    </script>
+        <script>
+            function saveJob(jobId) {
+                // Implement save job functionality
+                fetch(`/jobs/${jobId}/save`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            alert('Job saved successfully!');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+        </script>
     @endpush
 </x-app-layout>

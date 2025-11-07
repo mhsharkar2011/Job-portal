@@ -5,26 +5,29 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResumeController;
 use App\Models\Job;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/home', function () {
-    $data['jobs'] = Job::all();
-    return view('welcome', $data);
-})->name('home');
+// Route::get('/home', function () {
+//     $data['jobs'] = Job::all();
+//     return view('welcome', $data);
+// })->name('home');
 
 
-// In routes/web.php
-Route::get('/', function () {
-    $jobs = \App\Models\Job::withCount('applications')
-        ->latest()
-        ->take(9)
-        ->get();
-    return view('welcome', compact('jobs'));
-});
+// // In routes/web.php
+// Route::get('/', function () {
+//     $jobs = \App\Models\Job::withCount('applications')
+//         ->latest()
+//         ->take(9)
+//         ->get();
+//     return view('welcome', compact('jobs'));
+// });
+
+Route::get('/',[HomeController::class,'welcome'])->name('welcome');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -44,14 +47,17 @@ Route::group(['middleware' => ['auth']], function () {
 
         // Category Routes
         Route::resource('categories', CategoryController::class);
+        Route::get('/categories/{category:slug}/jobs', [CategoryController::class, 'jobs'])->name('category.jobs');
         Route::get('/categories/browse', [CategoryController::class, 'browse'])->name('categories.browse');
         Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+
 
         // API Routes for categories
         // Route::get('/api/categories', [CategoryController::class, 'getCategories'])->name('api.categories');
         // Company Routes
         Route::resource('companies', CompanyController::class);
         Route::get('/my-companies', [CompanyController::class, 'myCompanies'])->name('companies.my');
+        Route::get('/companies/{company}/jobs', [CompanyController::class, 'jobs'])->name('company.jobs');
         // Jobs APIs
         Route::get('jobs', [JobController::class, 'index'])->name('jobs.appliedJob');
         // Create Jobs

@@ -110,7 +110,7 @@ class Job extends Model
             ->exists();
     }
 
-    
+
     /**
      * Scope a query to only include active jobs.
      */
@@ -129,8 +129,9 @@ class Job extends Model
      */
     public function scopePublished($query)
     {
-        return $query->whereNotNull('published_at')
-            ->where('published_at', '<=', now());
+        // return $query->whereNotNull('published_at')->where('published_at', '<=', now());
+
+        return $query->where('published_at', '>=', now()->subDays(7));
     }
     /**
      * Scope a query to only include featured jobs.
