@@ -5,8 +5,8 @@
                 <div class="p-6 md:p-8">
                     <!-- Header -->
                     <div class="mb-8">
-                        <h3 class="text-3xl font-bold text-gray-900">Post a Job</h3>
-                        <p class="text-gray-600 mt-2">Fill in the details below to create a new job posting</p>
+                        <h3 class="text-3xl font-bold text-gray-900">Edit Job Posting</h3>
+                        <p class="text-gray-600 mt-2">Update the details of your job posting</p>
                     </div>
 
                     <!-- Display Validation Errors -->
@@ -20,9 +20,9 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('jobs.store') }}" method="POST" enctype="multipart/form-data"
-                        autocomplete="off">
+                    <form action="{{ route('jobs.update', $job->id) }}" method="POST" enctype="multipart/form-data" autocomplete="off">
                         @csrf
+                        @method('PUT')
 
                         <!-- Company Selection -->
                         <div class="mb-6">
@@ -35,7 +35,7 @@
                                 <option value="">Select a Company</option>
                                 @foreach ($companies as $company)
                                     <option value="{{ $company->id }}"
-                                        {{ old('company_id') == $company->id ? 'selected' : '' }}>
+                                        {{ old('company_id', $job->company_id) == $company->id ? 'selected' : '' }}>
                                         {{ $company->name }}
                                     </option>
                                 @endforeach
@@ -52,37 +52,25 @@
                             </div>
                         </div>
 
-                        <!-- Industry -->
-                        <div>
-                            <label for="industry" class="block text-sm font-medium text-gray-700 mb-2">Industry Type
-                                *</label>
-                            <select id="industry" name="category_id"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('industry') border-red-500 @enderror"
+                        <!-- Category Selection -->
+                        <div class="mb-6">
+                            <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                Job Category <span class="text-red-500">*</span>
+                            </label>
+                            <select id="category_id" name="category_id"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('category_id') border-red-500 @enderror"
                                 required>
-                                <option value="">Select Industry</option>
+                                <option value="">Select Job Category</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}"
-                                        {{ old('industry', $category->id ?? '') == $category->id ? 'selected' : '' }}>
+                                        {{ old('category_id', $job->category_id) == $category->id ? 'selected' : '' }}>
                                         {{ $category->name }}
                                     </option>
                                 @endforeach
-                                <!-- Keep "Other" option for custom industries -->
-                                <option value="Other"
-                                    {{ old('industry', $company->industry ?? '') == 'Other' ? 'selected' : '' }}>Other
-                                </option>
                             </select>
-                            @error('industry')
+                            @error('category_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
-
-                            <!-- Show custom industry input if "Other" is selected -->
-                            <div id="custom_industry_container" class="mt-4 hidden">
-                                <label for="custom_industry" class="block text-sm font-medium text-gray-700 mb-2">Custom
-                                    Industry</label>
-                                <input type="text" id="custom_industry" name="custom_industry"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Enter your industry">
-                            </div>
                         </div>
 
                         <!-- Job Title -->
@@ -92,7 +80,7 @@
                             </label>
                             <input type="text" name="job_title" id="job_title"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                value="{{ old('job_title') }}" placeholder="e.g., Senior Software Engineer" required>
+                                value="{{ old('job_title', $job->job_title) }}" placeholder="e.g., Senior Software Engineer" required>
                             @error('job_title')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -105,7 +93,7 @@
                             </label>
                             <textarea name="job_description" id="job_description" rows="5"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Describe the role, responsibilities, and what you're looking for in a candidate..." required>{{ old('job_description') }}</textarea>
+                                placeholder="Describe the role, responsibilities, and what you're looking for in a candidate..." required>{{ old('job_description', $job->job_description) }}</textarea>
                             @error('job_description')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -118,7 +106,7 @@
                             </label>
                             <textarea name="requirement" id="requirement" rows="5"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="List the required skills, experience, and qualifications..." required>{{ old('requirement') }}</textarea>
+                                placeholder="List the required skills, experience, and qualifications..." required>{{ old('requirement', $job->requirement) }}</textarea>
                             @error('requirement')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -131,7 +119,7 @@
                             </label>
                             <input type="text" name="location" id="location"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                value="{{ old('location') }}" placeholder="e.g., New York, NY or Remote" required>
+                                value="{{ old('location', $job->location) }}" placeholder="e.g., New York, NY or Remote" required>
                             @error('location')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -149,7 +137,7 @@
                                     </label>
                                     <input type="number" name="experience_minimum" id="experience_minimum"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value="{{ old('experience_minimum', 0) }}" min="0" max="50"
+                                        value="{{ old('experience_minimum', $job->experience_minimum) }}" min="0" max="50"
                                         required>
                                     @error('experience_minimum')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -161,7 +149,7 @@
                                     </label>
                                     <input type="number" name="experience_maximum" id="experience_maximum"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value="{{ old('experience_maximum', 5) }}" min="0" max="50"
+                                        value="{{ old('experience_maximum', $job->experience_maximum) }}" min="0" max="50"
                                         required>
                                     @error('experience_maximum')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -175,11 +163,11 @@
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         required>
                                         <option value="years"
-                                            {{ old('experience_unit', 'years') == 'years' ? 'selected' : '' }}>
+                                            {{ old('experience_unit', $job->experience_unit) == 'years' ? 'selected' : '' }}>
                                             Years
                                         </option>
                                         <option value="months"
-                                            {{ old('experience_unit') == 'months' ? 'selected' : '' }}>
+                                            {{ old('experience_unit', $job->experience_unit) == 'months' ? 'selected' : '' }}>
                                             Months
                                         </option>
                                     </select>
@@ -198,7 +186,7 @@
                                 </label>
                                 <input type="text" name="role" id="role"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    value="{{ old('role') }}"
+                                    value="{{ old('role', $job->role) }}"
                                     placeholder="e.g., Software Engineer, Marketing Manager" required>
                                 @error('role')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -211,16 +199,13 @@
                                 </label>
                                 <input type="number" name="positions_available" id="positions_available"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    value="{{ old('positions_available', 1) }}" min="1" max="100"
+                                    value="{{ old('positions_available', $job->positions_available) }}" min="1" max="100"
                                     required>
                                 @error('positions_available')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
-
-
-
 
                         <!-- Salary Range -->
                         <div class="mb-6">
@@ -234,7 +219,7 @@
                                     </label>
                                     <input type="number" name="salary_minimum" id="salary_minimum"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value="{{ old('salary_minimum') }}" placeholder="0" required>
+                                        value="{{ old('salary_minimum', $job->salary_minimum) }}" placeholder="0" required>
                                     @error('salary_minimum')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                     @enderror
@@ -245,7 +230,7 @@
                                     </label>
                                     <input type="number" name="salary_maximum" id="salary_maximum"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value="{{ old('salary_maximum') }}" placeholder="0" required>
+                                        value="{{ old('salary_maximum', $job->salary_maximum) }}" placeholder="0" required>
                                     @error('salary_maximum')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                     @enderror
@@ -259,19 +244,19 @@
                                         required>
                                         <option value="">Select Currency</option>
                                         <option value="USD"
-                                            {{ old('salary_currency', 'USD') == 'USD' ? 'selected' : '' }}>
+                                            {{ old('salary_currency', $job->salary_currency) == 'USD' ? 'selected' : '' }}>
                                             USD ($)
                                         </option>
                                         <option value="BDT"
-                                            {{ old('salary_currency') == 'BDT' ? 'selected' : '' }}>
+                                            {{ old('salary_currency', $job->salary_currency) == 'BDT' ? 'selected' : '' }}>
                                             BDT (৳)
                                         </option>
                                         <option value="EUR"
-                                            {{ old('salary_currency') == 'EUR' ? 'selected' : '' }}>
+                                            {{ old('salary_currency', $job->salary_currency) == 'EUR' ? 'selected' : '' }}>
                                             EUR (€)
                                         </option>
                                         <option value="GBP"
-                                            {{ old('salary_currency') == 'GBP' ? 'selected' : '' }}>
+                                            {{ old('salary_currency', $job->salary_currency) == 'GBP' ? 'selected' : '' }}>
                                             GBP (£)
                                         </option>
                                     </select>
@@ -292,22 +277,22 @@
                                 required>
                                 <option value="">Select Employment Type</option>
                                 <option value="full-time"
-                                    {{ old('employment_type', 'full-time') == 'full-time' ? 'selected' : '' }}>
+                                    {{ old('employment_type', $job->employment_type) == 'full-time' ? 'selected' : '' }}>
                                     Full Time
                                 </option>
                                 <option value="part-time"
-                                    {{ old('employment_type') == 'part-time' ? 'selected' : '' }}>
+                                    {{ old('employment_type', $job->employment_type) == 'part-time' ? 'selected' : '' }}>
                                     Part Time
                                 </option>
-                                <option value="contract" {{ old('employment_type') == 'contract' ? 'selected' : '' }}>
+                                <option value="contract" {{ old('employment_type', $job->employment_type) == 'contract' ? 'selected' : '' }}>
                                     Contract
                                 </option>
                                 <option value="freelance"
-                                    {{ old('employment_type') == 'freelance' ? 'selected' : '' }}>
+                                    {{ old('employment_type', $job->employment_type) == 'freelance' ? 'selected' : '' }}>
                                     Freelance
                                 </option>
                                 <option value="internship"
-                                    {{ old('employment_type') == 'internship' ? 'selected' : '' }}>
+                                    {{ old('employment_type', $job->employment_type) == 'internship' ? 'selected' : '' }}>
                                     Internship
                                 </option>
                             </select>
@@ -323,7 +308,7 @@
                             </label>
                             <input type="text" name="key_skills" id="key_skills"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                value="{{ old('key_skills') }}"
+                                value="{{ old('key_skills', $job->key_skills) }}"
                                 placeholder="Enter skills separated by commas (e.g., PHP, Laravel, JavaScript, MySQL)"
                                 required>
                             <p class="text-sm text-gray-500 mt-1">Separate multiple skills with commas</p>
@@ -339,17 +324,37 @@
                             </label>
                             <input type="date" name="application_deadline" id="application_deadline"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                value="{{ old('application_deadline') }}" min="{{ date('Y-m-d') }}">
+                                value="{{ old('application_deadline', $job->application_deadline ? \Carbon\Carbon::parse($job->application_deadline)->format('Y-m-d') : '') }}"
+                                min="{{ date('Y-m-d') }}">
                             <p class="text-sm text-gray-500 mt-1">Leave empty if there's no specific deadline</p>
                             @error('application_deadline')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
                         </div>
 
+                        <!-- Current Logo Preview -->
+                        @if($job->logo)
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Current Logo</label>
+                                <div class="flex items-center space-x-4">
+                                    <img src="{{ asset('storage/' . $job->logo) }}"
+                                         alt="Current company logo"
+                                         class="w-16 h-16 object-cover rounded-lg border border-gray-300">
+                                    <div>
+                                        <p class="text-sm text-gray-600">Current logo</p>
+                                        <label class="flex items-center mt-1">
+                                            <input type="checkbox" name="remove_logo" value="1" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                            <span class="ml-2 text-sm text-gray-600">Remove current logo</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
                         {{-- <!-- Logo Upload -->
                         <div class="mb-8">
                             <label for="logo" class="block mb-2 text-sm font-medium text-gray-700">
-                                Company Logo (Optional)
+                                {{ $job->logo ? 'Change Company Logo' : 'Company Logo' }} (Optional)
                             </label>
                             <input type="file" name="logo" id="logo" accept="image/*"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
@@ -363,14 +368,26 @@
                         <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
                             <button type="submit"
                                 class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
-                                <i class="fa-solid fa-paper-plane mr-2"></i>
-                                Post Job
+                                <i class="fa-solid fa-save mr-2"></i>
+                                Update Job
                             </button>
-                            <a href="{{ route('jobs.browse') }}"
+                            <a href="{{ route('jobs.show', $job->id) }}"
                                 class="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-6 rounded-lg transition-colors duration-200 text-center">
                                 Cancel
                             </a>
+                            <button type="button"
+                                onclick="confirmDelete({{ $job->id }})"
+                                class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                                <i class="fa-solid fa-trash mr-2"></i>
+                                Delete Job
+                            </button>
                         </div>
+                    </form>
+
+                    <!-- Delete Form -->
+                    <form id="delete-form-{{ $job->id }}" action="{{ route('jobs.destroy', $job->id) }}" method="POST" class="hidden">
+                        @csrf
+                        @method('DELETE')
                     </form>
                 </div>
             </div>
@@ -380,13 +397,10 @@
 
 @push('scripts')
     <script>
-        console.log('Current URL:', window.location.href);
-        console.log('URL Search Params:', new URLSearchParams(window.location.search));
-
-        // Check if category_id is in URL
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('category_id')) {
-            console.log('Category ID found in URL:', urlParams.get('category_id'));
+        function confirmDelete(jobId) {
+            if (confirm('Are you sure you want to delete this job posting? This action cannot be undone.')) {
+                document.getElementById('delete-form-' + jobId).submit();
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {

@@ -22,7 +22,6 @@ class Job extends Model
         'experience_maximum',
         'experience_unit',
         'role',
-        'industry_type',
         'employment_type',
         'salary_minimum',
         'salary_maximum',
@@ -65,6 +64,11 @@ class Job extends Model
         return $this->belongsTo(Company::class);
     }
 
+    public function companies()
+    {
+        return $this->hasMany(Company::class);
+    }
+
     /**
      * Get the category that owns the job.
      */
@@ -89,6 +93,24 @@ class Job extends Model
         return $this->hasMany(Application::class);
     }
 
+
+    public function applicationsCount()
+    {
+        return $this->applications()->count();
+    }
+
+    public function hasUserApplied()
+    {
+        if (!auth()->check()) {
+            return false;
+        }
+
+        return $this->applications()
+            ->where('user_id', auth()->id())
+            ->exists();
+    }
+
+    
     /**
      * Scope a query to only include active jobs.
      */

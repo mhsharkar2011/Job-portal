@@ -29,7 +29,7 @@
                         Companies
                     </a>
 
-                    <a href="{{ route('categories.browse') }}"
+                    <a href="{{ route('categories.index') }}"
                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all
                               {{ request()->is('categories*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-tags mr-2"></i>

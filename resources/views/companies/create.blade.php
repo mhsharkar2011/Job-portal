@@ -36,7 +36,7 @@
 
                         <!-- Industry -->
                         <div>
-                            <label for="industry" class="block text-sm font-medium text-gray-700 mb-2">Industry *</label>
+                            <label for="industry" class="block text-sm font-medium text-gray-700 mb-2">Industry Type *</label>
                             <select id="industry" name="industry"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('industry') border-red-500 @enderror"
                                 required>

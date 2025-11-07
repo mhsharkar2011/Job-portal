@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -46,8 +47,10 @@ class JobController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'company_name' => 'required|string|max:255',
+        // Validation rules
+        $rules = [
+            'company_id' => 'required|exists:companies,id',
+            'category_id' => 'required|exists:categories,id',
             'job_title' => 'required|string|max:255',
             'job_description' => 'required|string|min:50',
             'requirement' => 'required|string|min:50',
@@ -56,37 +59,62 @@ class JobController extends Controller
             'experience_maximum' => 'required|integer|min:0|gte:experience_minimum',
             'experience_unit' => 'required|in:years,months',
             'role' => 'required|string|max:255',
-            'industry_type' => 'required|string|max:255',
             'employment_type' => 'required|in:full-time,part-time,contract,freelance,internship',
             'salary_minimum' => 'required|integer|min:0',
             'salary_maximum' => 'required|integer|min:0|gte:salary_minimum',
             'salary_currency' => 'required|in:USD,BDT,EUR,GBP',
             'key_skills' => 'required|string|min:3',
             'positions_available' => 'required|integer|min:1|max:100',
+            'application_deadline' => 'nullable|date|after:today',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ];
+
+        // Custom messages
+        $messages = [
+            'company_id.required' => 'Please select a company',
+            'category_id.required' => 'Please select a category',
+            'salary_maximum.gte' => 'Maximum salary must be greater than or equal to minimum salary',
+            'experience_maximum.gte' => 'Maximum experience must be greater than or equal to minimum experience',
+            'application_deadline.after' => 'Application deadline must be a future date',
+        ];
+
+        $validated = $request->validate($rules, $messages);
 
         try {
-            // Handle file upload
-            if ($request->hasFile('logo')) {
-                $validated['logo'] = $request->file('logo')->store('company-logos', 'public');
-            }
+            return DB::transaction(function () use ($validated, $request) {
+                // Authorization check
+                $company = Company::findOrFail($validated['company_id']);
 
-            // Set additional fields
-            $validated['user_id'] = auth()->id();
-            $validated['is_active'] = true;
+                if ($company->user_id !== auth()->id()) {
+                    throw new \Exception('You are not authorized to post jobs for this company.');
+                }
 
-            // Create the job
-            $job = Job::create($validated);
+                // Handle file upload
+                if ($request->hasFile('logo')) {
+                    $validated['logo'] = $request->file('logo')->store('company-logos', 'public');
+                }
 
-            return redirect()->route('jobs.createdJob')
-                ->with('success', 'Job posted successfully! It will be live after review.');
+                // Create job with additional fields
+                $job = Job::create([
+                    ...$validated,
+                    'user_id' => auth()->id(),
+                    'is_active' => true,
+                ]);
+
+                return redirect()->route('jobs.createdJob')
+                    ->with('success', 'Job posted successfully! It will be live after review.');
+            });
         } catch (\Exception $e) {
             Log::error('Job creation error: ' . $e->getMessage());
+
+            $errorMessage = $e->getMessage();
+            if (str_contains($errorMessage, 'Unauthorized') || str_contains($errorMessage, 'authorized')) {
+                return back()->with('error', 'You are not authorized to perform this action.')->withInput();
+            }
+
             return back()->with('error', 'Failed to create job. Please try again.')->withInput();
         }
     }
-
 
     // Created Job for UI
     public function created()
@@ -214,8 +242,8 @@ class JobController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        // $categories = Category::all();
-        // $companies = Company::where('user_id', auth()->id())->get();
+        $categories = Category::all();
+        $companies = Company::where('user_id', auth()->id())->get();
 
         return view('jobs.edit', compact('job', 'categories', 'companies'));
     }

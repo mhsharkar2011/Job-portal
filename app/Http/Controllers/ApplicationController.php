@@ -5,119 +5,217 @@ namespace App\Http\Controllers;
 use App\Models\Application;
 use App\Models\Job;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ApplicationController extends Controller
 {
-    /**
-     * Display a listing of the applications for a specific job.
-     */
+
+
     public function index(Job $job)
     {
-        $applications = $job->applications()->with('user')->latest()->paginate(10);
-        return view('applications.index', compact('job', 'applications'));
-    }
-
-    /**
-     * Show the form for creating a new application.
-     */
-    public function create(Job $job)
-    {
-        return view('applications.create', compact('job'));
-    }
-
-    /**
-     * Store a newly created application.
-     */
-  public function store(Request $request, Job $job)
-    {
-        // Check if job is still accepting applications
-        if (!$job->is_accepting_applications) {
-            return back()->with('error', 'This job is no longer accepting applications.');
-        }
-
-        $validated = $request->validate([
-            'full_name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'resume' => 'required|file|mimes:pdf,doc,docx|max:2048',
-            'cover_letter' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
-            'skills' => 'nullable|string',
-            'experience_years' => 'nullable|integer|min:0',
-            'education' => 'nullable|string',
-        ]);
-
-        // Handle file uploads
-        if ($request->hasFile('resume')) {
-            $validated['resume'] = $request->file('resume')->store('resumes', 'public');
-        }
-
-        if ($request->hasFile('cover_letter')) {
-            $validated['cover_letter'] = $request->file('cover_letter')->store('cover_letters', 'public');
-        }
-
-        // Create application
-        $application = $job->applications()->create([
-            ...$validated,
-            'user_id' => auth()->id(),
-        ]);
-
-        return redirect()->route('jobs.show', $job)
-            ->with('success', 'Application submitted successfully!');
-    }
-
-    /**
-     * Update the application status.
-     */
- public function updateStatus(Request $request, Application $application)
-    {
-        $request->validate([
-            'status' => 'required|in:pending,under_review,shortlisted,interview,rejected,accepted',
-        ]);
-
-        $oldStatus = $application->status;
-        $application->update(['status' => $request->status]);
-
-        // If application is accepted, fill a position
-        if ($request->status === 'accepted' && $oldStatus !== 'accepted') {
-            $application->job->fillPosition();
-        }
-
-        // If application was accepted but now rejected, release the position
-        if ($request->status !== 'accepted' && $oldStatus === 'accepted') {
-            $application->job->releasePosition();
-        }
-
-        return back()->with('success', 'Application status updated successfully!');
-    }
-
-    /**
-     * Remove the specified application.
-     */
-    public function destroy(Application $application)
-    {
-        // Delete associated files
-        if ($application->resume) {
-            Storage::disk('public')->delete($application->resume);
-        }
-        if ($application->cover_letter) {
-            Storage::disk('public')->delete($application->cover_letter);
-        }
-
-        $application->delete();
-
-        return back()->with('success', 'Application deleted successfully!');
-    }
-
-
-     public function myApplications()
-    {
-        $applications = Application::with('job')
+        $applications = Application::with(['job', 'job.company'])
             ->where('user_id', auth()->id())
             ->latest()
             ->paginate(10);
 
-        return view('applications.my-applications', compact('applications'));
+        return view('applications.index', compact('applications','job'));
+    }
+
+
+
+    public function create(Job $job)
+    {
+        // Check if user already applied
+        $existingApplication = Application::where('job_id', $job->id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($existingApplication) {
+            return redirect()->route('jobs.show', $job)
+                ->with('error', 'You have already applied for this job.');
+        }
+
+        // Check if job is active
+        if (!$job->is_active) {
+            return redirect()->route('jobs.show', $job)
+                ->with('error', 'This job is no longer accepting applications.');
+        }
+
+        return view('applications.create', compact('job'));
+    }
+
+    public function store(Request $request, Job $job)
+    {
+        // Check if user already applied
+        $existingApplication = Application::where('job_id', $job->id)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($existingApplication) {
+            return redirect()->route('jobs.show', $job)
+                ->with('error', 'You have already applied for this job.');
+        }
+
+        // Check if job is active
+        if (!$job->is_active) {
+            return redirect()->route('jobs.show', $job)
+                ->with('error', 'This job is no longer accepting applications.');
+        }
+
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'experience_years' => 'required|integer|min:0|max:50',
+            'address' => 'nullable|string|max:500',
+            'skills' => 'required|string|max:1000',
+            'education' => 'required|string|max:1000',
+            'resume' => 'required|file|mimes:pdf,doc,docx|max:2048',
+            'cover_letter' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+        ]);
+
+        try {
+            DB::transaction(function () use ($validated, $request, $job) {
+                // Handle file uploads
+                $resumePath = $request->file('resume')->store('applications/resumes', 'public');
+
+                $coverLetterPath = null;
+                if ($request->hasFile('cover_letter')) {
+                    $coverLetterPath = $request->file('cover_letter')->store('applications/cover_letters', 'public');
+                }
+
+                // Create application
+                Application::create([
+                    'job_id' => $job->id,
+                    'user_id' => auth()->id(),
+                    'full_name' => $validated['full_name'],
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'],
+                    'experience_years' => $validated['experience_years'],
+                    'address' => $validated['address'],
+                    'skills' => $validated['skills'],
+                    'education' => $validated['education'],
+                    'resume_path' => $resumePath,
+                    'cover_letter_path' => $coverLetterPath,
+                    'status' => 'pending',
+                ]);
+            });
+
+            return redirect()->route('jobs.show', $job)
+                ->with('success', 'Application submitted successfully! We will review your application and get back to you soon.');
+
+        } catch (\Exception $e) {
+            Log::error('Application submission error: ' . $e->getMessage());
+
+            // Clean up uploaded files if any
+            if (isset($resumePath)) {
+                Storage::disk('public')->delete($resumePath);
+            }
+            if (isset($coverLetterPath)) {
+                Storage::disk('public')->delete($coverLetterPath);
+            }
+
+            return back()->with('error', 'Failed to submit application. Please try again.')->withInput();
+        }
+    }
+
+    public function show(Application $application)
+    {
+        // Authorization - user can only view their own applications
+        if ($application->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $application->load(['job.company', 'user']);
+
+        return view('applications.show', compact('application'));
+    }
+
+    public function destroy(Application $application)
+    {
+        // Authorization - user can only delete their own applications
+        if ($application->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Only allow deletion of pending applications
+        if ($application->status !== 'pending') {
+            return back()->with('error', 'You can only withdraw pending applications.');
+        }
+
+        try {
+            DB::transaction(function () use ($application) {
+                // Delete files from storage
+                if ($application->resume_path) {
+                    Storage::disk('public')->delete($application->resume_path);
+                }
+                if ($application->cover_letter_path) {
+                    Storage::disk('public')->delete($application->cover_letter_path);
+                }
+
+                // Delete application
+                $application->delete();
+            });
+
+            return redirect()->route('applications.index')
+                ->with('success', 'Application withdrawn successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Application deletion error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to withdraw application. Please try again.');
+        }
+    }
+
+    // Employer methods to manage applications
+    public function employerIndex()
+    {
+        $applications = Application::with(['job', 'user'])
+            ->whereHas('job', function ($query) {
+                $query->where('user_id', auth()->id());
+            })
+            ->latest()
+            ->paginate(10);
+
+        return view('applications.employer-index', compact('applications'));
+    }
+
+    public function employerShow(Application $application)
+    {
+        // Authorization - employer can only view applications for their jobs
+        if ($application->job->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $application->load(['job', 'user']);
+
+        return view('applications.employer-show', compact('application'));
+    }
+
+    public function updateStatus(Request $request, Application $application)
+    {
+        // Authorization - employer can only update status for their jobs
+        if ($application->job->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:reviewed,accepted,rejected',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $application->update([
+                'status' => $validated['status'],
+                'notes' => $validated['notes'] ?? $application->notes,
+            ]);
+
+            return back()->with('success', 'Application status updated successfully.');
+
+        } catch (\Exception $e) {
+            Log::error('Application status update error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to update application status.');
+        }
     }
 }

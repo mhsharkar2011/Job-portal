@@ -16,7 +16,7 @@ class JobSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::where('email', 'employer@jobportal.test')->first();
+        $user = User::where('email', 'admin@mail.com')->first();
         $companies = Company::all();
         $categories = Category::all();
 
@@ -28,8 +28,8 @@ class JobSeeder extends Seeder
         $jobs = [
             [
                 'user_id' => $user->id,
-                'company_id' => $companies->where('industry', 'Technology')->first()->id,
-                'category_id' => $categories->where('name', 'Software Development')->first()->id,
+                'company_id' => $companies->first()->id,
+                'category_id' => $categories->first()->id,
                 'job_title' => 'Senior Software Engineer',
                 'job_description' => 'We are looking for a skilled Senior Software Engineer to join our dynamic team. You will be responsible for developing and maintaining high-quality software solutions, collaborating with cross-functional teams, and contributing to architectural decisions.',
                 'requirement' => 'Bachelor\'s degree in Computer Science or related field. 5+ years of experience in software development. Proficiency in JavaScript, Python, or Java. Experience with cloud platforms (AWS, Azure, or GCP). Strong understanding of software architecture and design patterns.',
@@ -38,7 +38,6 @@ class JobSeeder extends Seeder
                 'experience_maximum' => 8,
                 'experience_unit' => 'years',
                 'role' => 'Software Development',
-                'industry_type' => 'Technology',
                 'employment_type' => 'full-time',
                 'salary_minimum' => 120000,
                 'salary_maximum' => 160000,
@@ -51,8 +50,8 @@ class JobSeeder extends Seeder
             ],
             [
                 'user_id' => $user->id,
-                'company_id' => $companies->where('industry', 'Healthcare')->first()->id,
-                'category_id' => $categories->where('name', 'Healthcare')->first()->id,
+                'company_id' => $companies->first()->id,
+                'category_id' => $categories->first()->id,
                 'job_title' => 'Registered Nurse',
                 'job_description' => 'Join our healthcare team as a Registered Nurse. You will provide exceptional patient care, administer medications, monitor patient conditions, and collaborate with healthcare professionals to ensure the best outcomes.',
                 'requirement' => 'Valid RN license. BSN degree preferred. 2+ years of nursing experience. BLS and ACLS certification. Excellent communication and critical thinking skills.',
@@ -61,7 +60,6 @@ class JobSeeder extends Seeder
                 'experience_maximum' => 5,
                 'experience_unit' => 'years',
                 'role' => 'Healthcare',
-                'industry_type' => 'Healthcare',
                 'employment_type' => 'full-time',
                 'salary_minimum' => 65000,
                 'salary_maximum' => 85000,

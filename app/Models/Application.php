@@ -4,156 +4,118 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Application extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'job_id',
         'user_id',
         'full_name',
         'email',
         'phone',
-        'address',
-        'resume',
-        'cover_letter',
-        'status',
-        'skills',
         'experience_years',
+        'address',
+        'skills',
         'education',
-        'custom_questions',
+        'resume_path',
+        'cover_letter_path',
+        'status',
+        'notes',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'skills' => 'array',
-        'custom_questions' => 'array',
         'experience_years' => 'integer',
     ];
 
-    /**
-     * Get the status options.
-     */
-    public static function getStatusOptions(): array
+    // Add this method to fix the error
+    public static function getStatusOptions()
     {
         return [
             'pending' => 'Pending',
-            'under_review' => 'Under Review',
-            'shortlisted' => 'Shortlisted',
-            'interview' => 'Interview',
-            'rejected' => 'Rejected',
+            'reviewed' => 'Reviewed',
             'accepted' => 'Accepted',
+            'rejected' => 'Rejected',
         ];
     }
 
-    /**
-     * Get the job that the application belongs to.
-     */
-    public function job(): BelongsTo
+    // Get status badge color
+    public function getStatusBadgeAttribute()
+    {
+        $badges = [
+            'pending' => 'bg-yellow-100 text-yellow-800',
+            'reviewed' => 'bg-blue-100 text-blue-800',
+            'accepted' => 'bg-green-100 text-green-800',
+            'rejected' => 'bg-red-100 text-red-800',
+        ];
+
+        return $badges[$this->status] ?? 'bg-gray-100 text-gray-800';
+    }
+
+    // Get formatted status
+    public function getFormattedStatusAttribute()
+    {
+        $statuses = self::getStatusOptions();
+        return $statuses[$this->status] ?? ucfirst($this->status);
+    }
+
+    // Relationships
+    public function job()
     {
         return $this->belongsTo(Job::class);
     }
 
-    /**
-     * Get the user that submitted the application.
-     */
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Scope a query to only include applications with a specific status.
-     */
-    public function scopeStatus($query, string $status)
+    public function company()
     {
-        return $query->where('status', $status);
+        return $this->hasOneThrough(Company::class, Job::class, 'id', 'id', 'job_id', 'company_id');
     }
 
-    /**
-     * Scope a query to only include applications for a specific job.
-     */
-    public function scopeForJob($query, int $jobId)
+    // Scopes
+    public function scopePending($query)
     {
-        return $query->where('job_id', $jobId);
+        return $query->where('status', 'pending');
     }
 
-    /**
-     * Scope a query to only include applications from a specific user.
-     */
-    public function scopeFromUser($query, int $userId)
+    public function scopeReviewed($query)
     {
-        return $query->where('user_id', $userId);
+        return $query->where('status', 'reviewed');
     }
 
-    /**
-     * Check if the application is pending.
-     */
-    public function isPending(): bool
+    public function scopeAccepted($query)
+    {
+        return $query->where('status', 'accepted');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
+    }
+
+    // Accessors
+    public function getResumeUrlAttribute()
+    {
+        return $this->resume_path ? asset('storage/' . $this->resume_path) : null;
+    }
+
+    public function getCoverLetterUrlAttribute()
+    {
+        return $this->cover_letter_path ? asset('storage/' . $this->cover_letter_path) : null;
+    }
+
+    public function getFormattedExperienceAttribute()
+    {
+        return $this->experience_years . ' years';
+    }
+
+    // Check if application can be withdrawn (only pending applications)
+    public function canWithdraw()
     {
         return $this->status === 'pending';
-    }
-
-    /**
-     * Check if the application is accepted.
-     */
-    public function isAccepted(): bool
-    {
-        return $this->status === 'accepted';
-    }
-
-    /**
-     * Check if the application is rejected.
-     */
-    public function isRejected(): bool
-    {
-        return $this->status === 'rejected';
-    }
-
-    /**
-     * Get the formatted status.
-     */
-    public function getFormattedStatusAttribute(): string
-    {
-        return self::getStatusOptions()[$this->status] ?? ucfirst($this->status);
-    }
-
-    /**
-     * Get the skills as an array.
-     */
-    public function getSkillsArrayAttribute(): array
-    {
-        if (is_array($this->skills)) {
-            return $this->skills;
-        }
-
-        return $this->skills ? explode(',', $this->skills) : [];
-    }
-
-    /**
-     * Get the application date in a formatted way.
-     */
-    public function getAppliedDateAttribute(): string
-    {
-        return $this->created_at->format('M d, Y');
-    }
-
-    /**
-     * Get the application time in a formatted way.
-     */
-    public function getAppliedTimeAttribute(): string
-    {
-        return $this->created_at->format('h:i A');
     }
 }

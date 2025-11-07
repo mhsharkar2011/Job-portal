@@ -34,7 +34,6 @@ return new class extends Migration
 
             // Job classification
             $table->string('role');
-            $table->string('industry_type');
             $table->enum('employment_type', ['full-time', 'part-time', 'contract', 'freelance', 'internship']);
 
             // Salary information
