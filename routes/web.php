@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResumeController;
 use App\Models\Job;
 use Illuminate\Support\Facades\Route;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 // Route::get('/home', function () {
 //     $data['jobs'] = Job::all();
@@ -27,7 +29,7 @@ use Illuminate\Support\Facades\Route;
 //     return view('welcome', compact('jobs'));
 // });
 
-Route::get('/',[HomeController::class,'welcome'])->name('welcome');
+Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -39,6 +41,46 @@ Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'storeRegister'])->name('storeRegister');
 
 Route::group(['middleware' => ['auth']], function () {
+
+    // Route::prefix('admins')->group(function () {
+
+    // });
+
+
+    // Admin Routes
+    Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+        // User Management
+        Route::get('/users', [AdminController::class, 'users'])->name('users.index');
+        Route::get('/users/{user}', [AdminController::class, 'userShow'])->name('users.show');
+        Route::get('/users/{user}/edit', [AdminController::class, 'userEdit'])->name('users.edit');
+        Route::put('/users/{user}', [AdminController::class, 'userUpdate'])->name('users.update');
+        Route::delete('/users/{user}', [AdminController::class, 'userDestroy'])->name('users.destroy');
+
+        // Job Management
+        Route::get('/jobs', [AdminController::class, 'jobs'])->name('jobs.index');
+        Route::get('/jobs/create', [AdminController::class, 'create'])->name('admin.jobs.create');
+        Route::get('/jobs', [AdminController::class, 'jobs'])->name('jobs.index');
+        Route::get('/jobs/{job}', [AdminController::class, 'jobShow'])->name('jobs.show');
+        Route::get('/jobs/{job}/edit', [AdminController::class, 'jobEdit'])->name('jobs.edit');
+        Route::put('/jobs/{job}', [AdminController::class, 'jobUpdate'])->name('jobs.update');
+        Route::delete('/jobs/{job}', [AdminController::class, 'jobDestroy'])->name('jobs.destroy');
+
+        // Application Management
+        Route::get('/applications', [AdminController::class, 'applications'])->name('applications.index');
+        Route::get('/applications/{application}', [AdminController::class, 'applicationShow'])->name('applications.show');
+        Route::put('/applications/{application}/status', [AdminController::class, 'applicationUpdateStatus'])->name('applications.update-status');
+
+        // Settings & Reports
+        Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+        Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+        Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+    });
+
+
+
     Route::prefix('auth')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
         // Resume APIs
@@ -51,6 +93,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/categories/browse', [CategoryController::class, 'browse'])->name('categories.browse');
         Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
 
+        // Route::get('/admins/applications', [DashboardController::class, 'adminDashboardApplications'])->name('admin.applications.index');
+        // Route::get('/admins/jobs', [DashboardController::class, 'adminDashboardJobs'])->name('admin.jobs.index');
+        // Route::post('/admins/jobs/create', [DashboardController::class, 'adminDashboardJobsCreate'])->name('admin.jobs.create');
+        // Route::get('/users', [DashboardController::class, 'adminDashboardUsers'])->name('admin.users.index');
+        // Route::get('/admins/setting', [DashboardController::class, 'adminDashboardSettings '])->name('admin.settings');
 
         // API Routes for categories
         // Route::get('/api/categories', [CategoryController::class, 'getCategories'])->name('api.categories');

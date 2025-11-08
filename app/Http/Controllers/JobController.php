@@ -289,4 +289,7 @@ class JobController extends Controller
 
         return redirect()->route('jobs.createdJob')->with('success', 'Job Deleted Successfully');
     }
+
+
+    
 }

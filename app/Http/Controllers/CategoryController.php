@@ -70,7 +70,6 @@ class CategoryController extends Controller
 
             return redirect()->route('categories.index')
                 ->with('success', 'Category created successfully!');
-
         } catch (\Exception $e) {
             Log::error('Category creation error: ' . $e->getMessage());
             return back()->with('error', 'Failed to create category. Please try again.')->withInput();
@@ -132,7 +131,6 @@ class CategoryController extends Controller
 
             return redirect()->route('categories.index')
                 ->with('success', 'Category updated successfully!');
-
         } catch (\Exception $e) {
             Log::error('Category update error: ' . $e->getMessage());
             return back()->with('error', 'Failed to update category. Please try again.')->withInput();
@@ -154,7 +152,6 @@ class CategoryController extends Controller
 
             return redirect()->route('categories.index')
                 ->with('success', 'Category deleted successfully!');
-
         } catch (\Exception $e) {
             Log::error('Category deletion error: ' . $e->getMessage());
             return back()->with('error', 'Failed to delete category. Please try again.');
@@ -171,5 +168,18 @@ class CategoryController extends Controller
             ->get(['id', 'name']);
 
         return response()->json($categories);
+    }
+
+
+    // In CategoryController.php
+    public function jobs(Category $category)
+    {
+        // Get jobs for this category with pagination and applicant count
+        $jobs = $category->jobs()
+            ->withCount('applications')
+            ->latest()
+            ->paginate(10);
+
+        return view('categories.jobs', compact('category', 'jobs'));
     }
 }
