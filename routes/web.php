@@ -10,127 +10,148 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResumeController;
+use App\Models\Job;
 use Illuminate\Support\Facades\Route;
+use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
-// Public Routes
+// Route::get('/home', function () {
+//     $data['jobs'] = Job::all();
+//     return view('welcome', $data);
+// })->name('home');
+
+
+// // In routes/web.php
+// Route::get('/', function () {
+//     $jobs = \App\Models\Job::withCount('applications')
+//         ->latest()
+//         ->take(9)
+//         ->get();
+//     return view('welcome', compact('jobs'));
+// });
+
 Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
 
-// Authentication Routes
-Route::controller(AuthController::class)->group(function () {
-    Route::get('login', 'login')->name('login');
-    Route::post('login', 'storeLogin')->name('storeLogin');
-    Route::get('register', 'register')->name('register');
-    Route::post('register', 'storeRegister')->name('storeRegister');
-});
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-// Public Job Routes
-Route::controller(JobController::class)->group(function () {
-    Route::get('/jobs', 'index')->name('jobs.index');
-    Route::get('/jobs/{job}', 'show')->name('jobs.show');
-});
+Route::get('login', [AuthController::class, 'login'])->name('login');
+Route::post('login', [AuthController::class, 'storeLogin'])->name('storeLogin');
+Route::get('register', [AuthController::class, 'register'])->name('register');
+Route::post('register', [AuthController::class, 'storeRegister'])->name('storeRegister');
 
-// Authenticated Routes
-Route::middleware(['auth'])->group(function () {
+Route::group(['middleware' => ['auth']], function () {
 
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Route::prefix('admins')->group(function () {
 
-    // Profile Management
-    Route::controller(ProfileController::class)->group(function () {
-        Route::get('/profile', 'edit')->name('profile.edit');
-        Route::patch('/profile', 'update')->name('profile.update');
-        Route::delete('/profile', 'destroy')->name('profile.destroy');
+    // });
+
+
+    // Admin Routes
+    Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
+
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+
+        // User Management
+        Route::get('/users', [AdminController::class, 'users'])->name('users.index');
+        Route::get('/users/{user}', [AdminController::class, 'userShow'])->name('users.show');
+        Route::get('/users/{user}/edit', [AdminController::class, 'userEdit'])->name('users.edit');
+        Route::put('/users/{user}', [AdminController::class, 'userUpdate'])->name('users.update');
+        Route::delete('/users/{user}', [AdminController::class, 'userDestroy'])->name('users.destroy');
+
+        // Job Management
+        Route::get('/jobs', [AdminController::class, 'jobs'])->name('jobs.index');
+        Route::get('/jobs/create', [AdminController::class, 'create'])->name('admin.jobs.create');
+        Route::get('/jobs', [AdminController::class, 'jobs'])->name('jobs.index');
+        Route::get('/jobs/{job}', [AdminController::class, 'jobShow'])->name('jobs.show');
+        Route::get('/jobs/{job}/edit', [AdminController::class, 'jobEdit'])->name('jobs.edit');
+        Route::put('/jobs/{job}', [AdminController::class, 'jobUpdate'])->name('jobs.update');
+        Route::delete('/jobs/{job}', [AdminController::class, 'jobDestroy'])->name('jobs.destroy');
+
+        // Application Management
+        Route::get('/applications', [AdminController::class, 'applications'])->name('applications.index');
+        Route::get('/applications/{application}', [AdminController::class, 'applicationShow'])->name('applications.show');
+        Route::put('/applications/{application}/status', [AdminController::class, 'applicationUpdateStatus'])->name('applications.update-status');
+
+        // Settings & Reports
+        Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+        Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+        Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     });
 
-    // Authentication
-    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Resume Routes
-    Route::resource('resumes', ResumeController::class)->except(['index', 'create', 'store']);
-    Route::get('get_states/{state}/edit', [ResumeController::class, 'getStates']);
 
-    // Category Routes
-    Route::controller(CategoryController::class)->group(function () {
+    Route::prefix('auth')->group(function () {
+        Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        // Resume APIs
+        Route::resource('resumes', ResumeController::class)->except(['index', 'create', 'store']);
+        Route::get('get_states/{state}/edit', [ResumeController::class, 'getStates']);
+
+        // Category Routes
         Route::resource('categories', CategoryController::class);
-        Route::get('/categories/{category:slug}/jobs', 'jobs')->name('category.jobs');
-        Route::get('/categories/browse', 'browse')->name('categories.browse');
-        Route::get('/categories/{category:slug}', 'show')->name('categories.show');
-    });
+        Route::get('/categories/{category:slug}/jobs', [CategoryController::class, 'jobs'])->name('category.jobs');
+        Route::get('/categories/browse', [CategoryController::class, 'browse'])->name('categories.browse');
+        Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
 
-    // Company Routes
-    Route::controller(CompanyController::class)->group(function () {
+        // Route::get('/admins/applications', [DashboardController::class, 'adminDashboardApplications'])->name('admin.applications.index');
+        // Route::get('/admins/jobs', [DashboardController::class, 'adminDashboardJobs'])->name('admin.jobs.index');
+        // Route::post('/admins/jobs/create', [DashboardController::class, 'adminDashboardJobsCreate'])->name('admin.jobs.create');
+        // Route::get('/users', [DashboardController::class, 'adminDashboardUsers'])->name('admin.users.index');
+        // Route::get('/admins/setting', [DashboardController::class, 'adminDashboardSettings '])->name('admin.settings');
+
+        // API Routes for categories
+        // Route::get('/api/categories', [CategoryController::class, 'getCategories'])->name('api.categories');
+        // Company Routes
         Route::resource('companies', CompanyController::class);
-        Route::get('/my-companies', 'myCompanies')->name('companies.my');
-        Route::get('/companies/{company}/jobs', 'jobs')->name('company.jobs');
+        Route::get('/my-companies', [CompanyController::class, 'myCompanies'])->name('companies.my');
+        Route::get('/companies/{company}/jobs', [CompanyController::class, 'jobs'])->name('company.jobs');
+        // Jobs APIs
+        Route::get('jobs', [JobController::class, 'index'])->name('jobs.appliedJob');
+        // Create Jobs
+        Route::Post('jobs', [JobController::class, 'store'])->name('jobs.postJob');
+        Route::get('jobs/create', [JobController::class, 'create'])->name('jobs.create');
+        Route::get('jobs/created-Job', [JobController::class, 'created'])->name('jobs.createdJob');
+        Route::put('jobs', [JobController::class, 'update'])->name('jobs.update');
+        Route::delete('jobs/{job}', [JobController::class, 'destroy'])->name('jobs.destroy');
+        // User APIs
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::post('logout', [AuthController::class, 'logout'])->name('logout');
     });
 
-    // Job Management Routes
-    Route::controller(JobController::class)->group(function () {
-        Route::get('/jobs/create', 'create')->name('jobs.create');
-        Route::post('/jobs', 'store')->name('jobs.store');
-        Route::get('/jobs/{job}/edit', 'edit')->name('jobs.edit');
-        Route::put('/jobs/{job}', 'update')->name('jobs.update');
-        Route::delete('/jobs/{job}', 'destroy')->name('jobs.destroy');
-        Route::post('/jobs/{job}/save', 'save')->name('jobs.save');
-        Route::get('/jobs/browse', 'browse')->name('jobs.browse');
-        Route::get('jobs/created-Job', 'created')->name('jobs.createdJob');
-    });
+    // Job CRUD
+    Route::get('/jobs/create', [JobController::class, 'create'])->name('jobs.create');
+    Route::post('/jobs', [JobController::class, 'store'])->name('jobs.store');
+    Route::get('/jobs/{job}/edit', [JobController::class, 'edit'])->name('jobs.edit');
+    Route::put('/jobs/{job}', [JobController::class, 'update'])->name('jobs.update');
+    Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->name('jobs.destroy');
+    Route::post('/jobs/{job}/save', [JobController::class, 'save'])->name('jobs.save');
+    Route::get('/jobs/browse', [JobController::class, 'browse'])->name('jobs.browse');
+
 
     // Application Routes
     Route::prefix('jobs/{job}')->group(function () {
-        Route::controller(ApplicationController::class)->group(function () {
-            Route::get('/applicants', 'index')->name('jobs.applicants');
-            Route::get('/apply', 'create')->name('applications.create');
-            Route::post('/apply', 'store')->name('applications.store');
-        });
+        // Show applicants for a job
+        Route::get('/applicants', [ApplicationController::class, 'index'])->name('jobs.applicants');
+
+        // Create application
+        Route::get('/apply', [ApplicationController::class, 'create'])->name('applications.create');
+        Route::post('/apply', [ApplicationController::class, 'store'])->name('applications.store');
     });
 
-    // Application Management
-    Route::controller(ApplicationController::class)->group(function () {
-        Route::put('/applications/{application}/status', 'updateStatus')->name('applications.updateStatus');
-        Route::delete('/applications/{application}', 'destroy')->name('applications.destroy');
-        Route::get('/my-applications', 'myApplications')->name('applications.myApplications');
-    });
 
-    // Admin Routes
-    Route::prefix('admin')->name('admin.')->middleware(['role:admin'])->group(function () {
-        Route::controller(AdminController::class)->group(function () {
-
-            // Dashboard
-            Route::get('/dashboard', 'dashboard')->name('dashboard');
-
-            // User Management
-            Route::prefix('users')->name('users.')->group(function () {
-                Route::get('/', 'users')->name('index');
-                Route::get('/{user}', 'userShow')->name('show');
-                Route::get('/{user}/edit', 'userEdit')->name('edit');
-                Route::put('/{user}', 'userUpdate')->name('update');
-                Route::delete('/{user}', 'userDestroy')->name('destroy');
-            });
-
-            // Job Management
-            Route::prefix('jobs')->name('jobs.')->group(function () {
-                Route::get('/', 'jobs')->name('index');
-                Route::get('/create', 'create')->name('create');
-                Route::get('/{job}', 'jobShow')->name('show');
-                Route::get('/{job}/edit', 'jobEdit')->name('edit');
-                Route::put('/{job}', 'jobUpdate')->name('update');
-                Route::delete('/{job}', 'jobDestroy')->name('destroy');
-            });
-
-            // Application Management
-            Route::prefix('applications')->name('applications.')->group(function () {
-                Route::get('/', 'applications')->name('index');
-                Route::get('/{application}', 'applicationShow')->name('show');
-                Route::put('/{application}/status', 'applicationUpdateStatus')->name('update-status');
-            });
-
-            // Settings & Reports
-            Route::get('/settings', 'settings')->name('settings');
-            Route::put('/settings', 'updateSettings')->name('settings.update');
-            Route::get('/reports', 'reports')->name('reports');
-        });
+    // Application management
+    Route::prefix('applications')->group(function () {
+        Route::put('/{application}/status', [ApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
+        Route::delete('/{application}', [ApplicationController::class, 'destroy'])->name('applications.destroy');
+        Route::get('/my-applications', [ApplicationController::class, 'myApplications'])->name('applications.myApplications');
     });
 });
 
 require __DIR__ . '/auth.php';
+
+
+// Public job viewing (if needed)
+Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
