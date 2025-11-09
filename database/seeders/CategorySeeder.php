@@ -31,41 +31,6 @@ class CategorySeeder extends Seeder
                 'color' => '#10B981',
                 'sort_order' => 3,
             ],
-            [
-                'name' => 'Sales',
-                'description' => 'Sales representatives and business development roles',
-                'icon' => 'fa-solid fa-chart-line',
-                'color' => '#F59E0B',
-                'sort_order' => 4,
-            ],
-            [
-                'name' => 'Customer Support',
-                'description' => 'Customer service and support positions',
-                'icon' => 'fa-solid fa-headset',
-                'color' => '#8B5CF6',
-                'sort_order' => 5,
-            ],
-            [
-                'name' => 'Finance & Accounting',
-                'description' => 'Financial analysis, accounting, and bookkeeping roles',
-                'icon' => 'fa-solid fa-calculator',
-                'color' => '#06B6D4',
-                'sort_order' => 6,
-            ],
-            [
-                'name' => 'Human Resources',
-                'description' => 'HR, recruitment, and talent management positions',
-                'icon' => 'fa-solid fa-users',
-                'color' => '#EC4899',
-                'sort_order' => 7,
-            ],
-            [
-                'name' => 'Healthcare',
-                'description' => 'Medical, nursing, and healthcare professional roles',
-                'icon' => 'fa-solid fa-heart-pulse',
-                'color' => '#DC2626',
-                'sort_order' => 8,
-            ],
         ];
 
         foreach ($categories as $category) {
