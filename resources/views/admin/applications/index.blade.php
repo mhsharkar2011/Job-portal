@@ -24,7 +24,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Total</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['total'] }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['total'] ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -40,7 +40,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Pending</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['pending'] }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['pending'] ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -56,7 +56,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Reviewed</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['reviewed'] }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['reviewed'] ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -72,7 +72,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Accepted</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['accepted'] }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['accepted'] ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -88,7 +88,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Rejected</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['rejected'] }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['rejected'] ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>

@@ -53,11 +53,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
         // User Management
-        Route::get('/users', [AdminController::class, 'users'])->name('users.index');
-        Route::get('/users/{user}', [AdminController::class, 'userShow'])->name('users.show');
-        Route::get('/users/{user}/edit', [AdminController::class, 'userEdit'])->name('users.edit');
-        Route::put('/users/{user}', [AdminController::class, 'userUpdate'])->name('users.update');
-        Route::delete('/users/{user}', [AdminController::class, 'userDestroy'])->name('users.destroy');
+        // Route::get('/users', [AdminController::class, 'users'])->name('admin.users.index');
+        // Route::get('/users/{user}', [AdminController::class, 'userShow'])->name('users.show');
+        // Route::get('/users/{user}/edit', [AdminController::class, 'userEdit'])->name('users.edit');
+        // Route::put('/users/{user}', [AdminController::class, 'userUpdate'])->name('users.update');
+        // Route::delete('/users/{user}', [AdminController::class, 'userDestroy'])->name('users.destroy');
 
         // Job Management
         Route::get('/jobs', [AdminController::class, 'jobs'])->name('jobs.index');
@@ -94,11 +94,19 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
 
         // Use this instead - it already exists in your AdminController
-        Route::get('/admin/applications', [AdminController::class, 'applications'])->name('admin.applications.index');
-        Route::get('/admins/jobs', [DashboardController::class, 'adminDashboardJobs'])->name('admin.jobs.index');
-        Route::post('/admins/jobs/create', [DashboardController::class, 'adminDashboardJobsCreate'])->name('admin.jobs.create');
-        Route::get('/users', [DashboardController::class, 'adminDashboardUsers'])->name('admin.users.index');
-        Route::get('/admins/setting', [DashboardController::class, 'adminDashboardSettings '])->name('admin.settings');
+        Route::get('users', [AdminController::class, 'adminUser'])->name('admin.users.index');
+        // Route::get('/admins/users', [AdminController::class, 'adminDashboardCreate'])->name('admin.users.create');
+        Route::get('admin/users/{user}', [AdminController::class, 'adminUserShow'])->name('admin.users.show');
+        Route::get('/admins/users/{user}/edit', [AdminController::class, 'adminUserEdit'])->name('admin.users.edit');
+        Route::put('users/{user}', [AdminController::class, 'adminUserUpdate'])->name('admin.users.update');
+        Route::get('/admins/users/{user}', [AdminController::class, 'adminUserDestroy'])->name('admin.users.destroy');
+        Route::get('/admins/applications', [AdminController::class, 'applications'])->name('admin.applications.index');
+        Route::put('/applications/{application}/status', [AdminController::class, 'applicationUpdateStatus'])->name('applications.update-status');
+        Route::get('/admins/applications/{application}', [AdminController::class, 'applicationsDestroy'])->name('admin.applications.destroy');
+        Route::get('/admins/applications', [AdminController::class, 'applicationsDownload'])->name('admin.applications.download-resume');
+        Route::get('/admins/jobs', [AdminController::class, 'adminDashboardJobs'])->name('admin.jobs.index');
+        Route::post('/admins/jobs/create', [AdminController::class, 'adminDashboardJobsCreate'])->name('admin.jobs.create');
+        Route::get('/admins/setting', [AdminController::class, 'adminDashboardSettings '])->name('admin.settings');
 
         // API Routes for categories
         Route::get('/api/categories', [CategoryController::class, 'getCategories'])->name('api.categories');

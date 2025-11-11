@@ -21,8 +21,13 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
+        'address',
+        'profile_photo_path',
+        'remove_photo',
         'password',
-         'role',
+        'role',
+        'is_active'
     ];
 
     /**
@@ -46,6 +51,11 @@ class User extends Authenticatable
     ];
 
 
+    // In app/Models/User.php
+    public function getProfilePhotoAttribute()
+    {
+        return $this->profile_photo_path;
+    }
 
     // Add this relationship if using roles
     public function roles()

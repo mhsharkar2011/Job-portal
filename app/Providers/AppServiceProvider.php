@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        view()->share('formMethod', function ($method) {
+            return in_array(strtoupper($method), ['PUT', 'PATCH', 'DELETE']) ? 'POST' : $method;
+        });
     }
 }

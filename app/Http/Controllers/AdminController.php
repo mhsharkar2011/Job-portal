@@ -7,6 +7,7 @@ use App\Models\Job;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -50,10 +51,10 @@ class AdminController extends Controller
 
         // Monthly registration stats for chart
         $monthlyRegistrations = User::select(
-                DB::raw('MONTH(created_at) as month'),
-                DB::raw('COUNT(*) as count'),
-                DB::raw('role')
-            )
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw('COUNT(*) as count'),
+            DB::raw('role')
+        )
             ->whereYear('created_at', date('Y'))
             ->groupBy('month', 'role')
             ->get();
@@ -67,15 +68,15 @@ class AdminController extends Controller
         ));
     }
 
-    public function users(Request $request)
+    public function adminUser(Request $request)
     {
         $query = User::query();
 
         // Search filter
         if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+                    ->orWhere('email', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -100,16 +101,16 @@ class AdminController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
-    public function userShow(User $user)
+    public function adminUserShow(User $user)
     {
         $user->loadCount(['jobs', 'applications']);
 
         if ($user->role === 'employer') {
-            $user->load(['jobs' => function($query) {
+            $user->load(['jobs' => function ($query) {
                 $query->withCount('applications')->latest();
             }]);
         } elseif ($user->role === 'job_seeker') {
-            $user->load(['applications' => function($query) {
+            $user->load(['applications' => function ($query) {
                 $query->with('job')->latest();
             }]);
         }
@@ -117,27 +118,77 @@ class AdminController extends Controller
         return view('admin.users.show', compact('user'));
     }
 
-    public function userEdit(User $user)
+    public function adminUserEdit(User $user)
     {
         return view('admin.users.edit', compact('user'));
     }
 
-    public function userUpdate(Request $request, User $user)
+    public function adminUserUpdate(Request $request, User $user)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
             'role' => 'required|in:admin,employer,job_seeker',
             'is_active' => 'boolean',
+            'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'remove_photo' => 'boolean',
         ]);
 
-        $user->update($validated);
+        try {
+            DB::beginTransaction();
 
-        return redirect()->route('admin.users.show', $user)
-            ->with('success', 'User updated successfully.');
+            // Handle photo removal first
+            if ($request->has('remove_photo') && $request->remove_photo) {
+                if ($user->profile_photo_path) {
+                    Storage::disk('public')->delete($user->profile_photo_path);
+                }
+                $user->profile_photo_path = null;
+            }
+            // Handle profile photo upload
+            elseif ($request->hasFile('profile_photo')) {
+                $file = $request->file('profile_photo');
+
+                // Delete old photo if exists
+                if ($user->profile_photo_path) {
+                    Storage::disk('public')->delete($user->profile_photo_path);
+                }
+
+                // Generate proper filename
+                $extension = $file->getClientOriginalExtension();
+                $filename = 'user-' . $user->id . '-' . time() . '.' . $extension;
+
+                // Store with proper filename
+                $path = $file->storeAs('profile-photos', $filename, 'public');
+                $user->profile_photo_path = $path;
+            }
+
+            // Update user data
+            $user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'address' => $validated['address'],
+                'role' => $validated['role'],
+                'is_active' => $validated['is_active'] ?? false,
+                'profile_photo_path' => $user->profile_photo_path, // This will be updated if photo was changed
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('admin.users.show', $user)
+                ->with('success', 'User updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->with('error', 'Failed to update user: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
-    public function userDestroy(User $user)
+    public function adminUserDestroy(User $user)
     {
         // Prevent admin from deleting themselves
         if ($user->id === auth()->id()) {
@@ -157,9 +208,9 @@ class AdminController extends Controller
 
         // Search filter
         if ($request->has('search') && $request->search) {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('job_title', 'like', '%' . $request->search . '%')
-                  ->orWhere('company_name', 'like', '%' . $request->search . '%');
+                    ->orWhere('company_name', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -229,9 +280,9 @@ class AdminController extends Controller
 
         // Search filter
         if ($request->has('search') && $request->search) {
-            $query->whereHas('user', function($q) use ($request) {
+            $query->whereHas('user', function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%');
-            })->orWhereHas('job', function($q) use ($request) {
+            })->orWhereHas('job', function ($q) use ($request) {
                 $q->where('job_title', 'like', '%' . $request->search . '%');
             });
         }
@@ -258,7 +309,7 @@ class AdminController extends Controller
 
         $application->update($validated);
 
-        return redirect()->route('admin.applications.show', $application)
+        return redirect()->route('admin.applications.index', $application)
             ->with('success', 'Application status updated successfully.');
     }
 
@@ -284,7 +335,162 @@ class AdminController extends Controller
             ->with('success', 'Settings updated successfully.');
     }
 
-    public function reports()
+
+        public function applicationsDestroy(Job $job)
+    {
+        $job->delete();
+
+        return redirect()->route('admin.jobs.index')
+            ->with('success', 'Job deleted successfully.');
+    }
+
+    // Admin Reports
+    public function reports(Request $request)
+    {
+        try {
+            // Date range filters with safe defaults
+            $startDate = $request->input('start_date', now()->subDays(30)->format('Y-m-d'));
+            $endDate = $request->input('end_date', now()->format('Y-m-d'));
+
+            // Convert to Carbon instances for queries
+            $startDateCarbon = \Carbon\Carbon::parse($startDate)->startOfDay();
+            $endDateCarbon = \Carbon\Carbon::parse($endDate)->endOfDay();
+
+            // Application Statistics
+            $applicationStats = Application::select('status', DB::raw('COUNT(*) as count'))
+                ->whereBetween('created_at', [$startDateCarbon, $endDateCarbon])
+                ->groupBy('status')
+                ->get();
+
+            $totalApplications = Application::whereBetween('created_at', [$startDateCarbon, $endDateCarbon])->count();
+
+            // Calculate growth rate safely
+            $previousApplications = Application::whereBetween('created_at', [
+                $startDateCarbon->copy()->subDays(30),
+                $endDateCarbon->copy()->subDays(30)
+            ])->count();
+
+            $applicationsGrowth = $this->calculateGrowthRate($previousApplications, $totalApplications);
+
+            // Job Statistics
+            $jobStats = Job::select(
+                DB::raw('COUNT(*) as total'),
+                DB::raw('SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active'),
+                DB::raw('SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) as inactive')
+            )
+                ->whereBetween('created_at', [$startDateCarbon, $endDateCarbon])
+                ->first();
+
+            $totalJobs = $jobStats->total ?? 0;
+
+            $previousJobs = Job::whereBetween('created_at', [
+                $startDateCarbon->copy()->subDays(30),
+                $endDateCarbon->copy()->subDays(30)
+            ])->count();
+
+            $jobsGrowth = $this->calculateGrowthRate($previousJobs, $totalJobs);
+
+            // User Statistics
+            $userStats = User::select(
+                DB::raw('COUNT(*) as total'),
+                DB::raw('SUM(CASE WHEN role = "employer" THEN 1 ELSE 0 END) as employers'),
+                DB::raw('SUM(CASE WHEN role = "job_seeker" THEN 1 ELSE 0 END) as job_seekers'),
+                DB::raw('SUM(CASE WHEN role = "admin" THEN 1 ELSE 0 END) as admins')
+            )
+                ->whereBetween('created_at', [$startDateCarbon, $endDateCarbon])
+                ->first();
+
+            $totalUsers = $userStats->total ?? 0;
+
+            $previousUsers = User::whereBetween('created_at', [
+                $startDateCarbon->copy()->subDays(30),
+                $endDateCarbon->copy()->subDays(30)
+            ])->count();
+
+            $usersGrowth = $this->calculateGrowthRate($previousUsers, $totalUsers);
+
+            // Popular Jobs (by application count)
+            $popularJobs = Job::withCount(['applications' => function ($query) use ($startDateCarbon, $endDateCarbon) {
+                $query->whereBetween('created_at', [$startDateCarbon, $endDateCarbon]);
+            }])
+                ->with('user')
+                ->orderBy('applications_count', 'desc')
+                ->take(10)
+                ->get();
+
+            // Top Employers (by job count)
+            $topEmployers = User::where('role', 'employer')
+                ->withCount(['jobs' => function ($query) use ($startDateCarbon, $endDateCarbon) {
+                    $query->whereBetween('created_at', [$startDateCarbon, $endDateCarbon]);
+                }])
+                ->withCount(['applications' => function ($query) use ($startDateCarbon, $endDateCarbon) {
+                    $query->whereBetween('created_at', [$startDateCarbon, $endDateCarbon]);
+                }])
+                ->having('jobs_count', '>', 0)
+                ->orderBy('jobs_count', 'desc')
+                ->take(10)
+                ->get();
+
+            // Application Status Distribution
+            $statusDistribution = Application::select('status', DB::raw('COUNT(*) as count'))
+                ->whereBetween('created_at', [$startDateCarbon, $endDateCarbon])
+                ->groupBy('status')
+                ->get();
+
+            // Ensure all variables have safe defaults
+            $data = [
+                'applicationStats' => $applicationStats,
+                'totalApplications' => $totalApplications,
+                'applicationsGrowth' => $applicationsGrowth,
+                'jobStats' => $jobStats,
+                'totalJobs' => $totalJobs,
+                'jobsGrowth' => $jobsGrowth,
+                'userStats' => $userStats,
+                'totalUsers' => $totalUsers,
+                'usersGrowth' => $usersGrowth,
+                'popularJobs' => $popularJobs,
+                'topEmployers' => $topEmployers,
+                'statusDistribution' => $statusDistribution,
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+            ];
+
+            return view('admin.reports', $data);
+        } catch (\Exception $e) {
+            // Fallback with default values if anything fails
+            return view('admin.reports', [
+                'applicationStats' => collect(),
+                'totalApplications' => 0,
+                'applicationsGrowth' => 0,
+                'jobStats' => (object) ['total' => 0, 'active' => 0, 'inactive' => 0],
+                'totalJobs' => 0,
+                'jobsGrowth' => 0,
+                'userStats' => (object) ['total' => 0, 'employers' => 0, 'job_seekers' => 0, 'admins' => 0],
+                'totalUsers' => 0,
+                'usersGrowth' => 0,
+                'popularJobs' => collect(),
+                'topEmployers' => collect(),
+                'statusDistribution' => collect(),
+                'startDate' => now()->subDays(30)->format('Y-m-d'),
+                'endDate' => now()->format('Y-m-d'),
+            ]);
+        }
+    }
+
+    private function calculateGrowthRate($previous, $current)
+    {
+        if ($previous == 0) {
+            return $current > 0 ? 100 : 0;
+        }
+
+        return (($current - $previous) / $previous) * 100;
+    }
+
+
+
+    // Download Reports
+
+    public function applicationsDownload()
     {
         // Generate various reports
         $popularJobs = Job::withCount('applications')
