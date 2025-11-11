@@ -8,7 +8,7 @@
         <!-- Breadcrumb -->
         <nav class="mb-6">
             <ol class="flex items-center space-x-2 text-sm text-gray-500">
-                <li><a href="{{ route('home') }}" class="hover:text-blue-600">Home</a></li>
+                <li><a href="{{ route('dashboard') }}" class="hover:text-blue-600">Dashboard</a></li>
                 <li><i class="fa-solid fa-chevron-right text-xs"></i></li>
                 <li><a href="{{ route('jobs.browse') }}" class="hover:text-blue-600">Jobs</a></li>
                 <li><i class="fa-solid fa-chevron-right text-xs"></i></li>

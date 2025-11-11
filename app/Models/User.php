@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+         'role',
     ];
 
     /**
@@ -43,6 +44,21 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+
+
+    // Add this relationship if using roles
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
+    }
+
+    // Helper method to check role
+    public function hasRole($role)
+    {
+        return $this->roles()->where('name', $role)->exists();
+    }
+
 
     public function resume()
     {

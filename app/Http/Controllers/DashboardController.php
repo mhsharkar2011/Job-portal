@@ -13,180 +13,94 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->role === 'admin') {
-            // You can add logic here to determine which admin view to show
-            // For example, based on URL parameters or user preferences
-            if (request()->has('view') && request('view') === 'settings') {
-                return $this->adminDashboardSettings();
-            } else {
-                return $this->adminDashboardApplications();
+        try {
+            // Check user role with fallback
+            $role = $user->role ?? 'job_seeker';
+
+            switch ($role) {
+                case 'admin':
+                    return $this->getAdminDashboard();
+                case 'employer':
+                    return $this->getEmployerDashboard();
+                default:
+                    return $this->getJobSeekerDashboard();
             }
-        } elseif ($user->role === 'employer') {
-            return $this->employerDashboard();
-        } else {
-            return $this->jobSeekerDashboard();
+        } catch (\Exception $e) {
+            // Fallback to basic dashboard if anything fails
+            return $this->getBasicDashboard();
         }
     }
 
-    // Admin Dashboard - Applications View
-    private function adminDashboardApplications()
+    private function getAdminDashboard()
     {
-        // Admin sees ALL applications, not just their own
-        $totalApplications = Application::count();
-        $totalJobs = Job::count();
-        $totalUsers = User::count();
-        $pendingApplications = Application::where('status', 'pending')->count();
+        $stats = [
+            'totalApplications' => Application::count(),
+            'totalJobs' => Job::count(),
+            'totalUsers' => User::count(),
+            'pendingApplications' => Application::where('status', 'pending')->count(),
+            'totalEmployers' => User::where('role', 'employer')->count(),
+            'totalJobSeekers' => User::where('role', 'job_seeker')->count(),
+            'activeJobs' => Job::where('is_active', true)->count(),
+        ];
 
-        // Additional admin stats
-        $totalEmployers = User::where('role', 'employer')->count();
-        $totalJobSeekers = User::where('role', 'job_seeker')->count();
-        $activeJobs = Job::where('is_active', true)->count();
-        $todaysApplications = Application::whereDate('created_at', today())->count();
+        $recentData = [
+            'recentJobs' => Job::with(['company'])->latest()->take(5)->get(),
+            'recentApplications' => Application::with(['job', 'user'])->latest()->take(5)->get(),
+        ];
 
-        // Get recent data from entire system
-        $recentJobs = Job::withCount('applications')
-            ->latest()
-            ->take(5)
-            ->get();
-
-        $recentApplications = Application::with(['job', 'user'])
-            ->latest()
-            ->take(5)
-            ->get();
-
-        return view('dashboard', compact(
-            'totalApplications',
-            'totalJobs',
-            'totalUsers',
-            'pendingApplications',
-            'totalEmployers',
-            'totalJobSeekers',
-            'activeJobs',
-            'todaysApplications',
-            'recentJobs',
-            'recentApplications'
-        ));
+        return view('dashboard', array_merge($stats, $recentData));
     }
 
-    // Admin Dashboard - Settings View
-    private function adminDashboardSettings()
-    {
-        // System-wide statistics for settings view
-        $totalUsers = User::count();
-        $totalJobs = Job::count();
-        $totalApplications = Application::count();
-        $pendingApplications = Application::where('status', 'pending')->count();
-
-        // System health metrics
-        $activeJobs = Job::where('is_active', true)->count();
-        $inactiveJobs = Job::where('is_active', false)->count();
-        $recentRegistrations = User::whereDate('created_at', '>=', now()->subDays(7))->count();
-
-        // Recent system activity
-        $recentJobs = Job::withCount('applications')
-            ->latest()
-            ->take(5)
-            ->get();
-
-        $recentUsers = User::latest()
-            ->take(5)
-            ->get();
-
-        return view('dashboard', compact(
-            'totalUsers',
-            'totalJobs',
-            'totalApplications',
-            'pendingApplications',
-            'activeJobs',
-            'inactiveJobs',
-            'recentRegistrations',
-            'recentJobs',
-            'recentUsers'
-        ));
-    }
-
-    private function employerDashboard()
+    private function getEmployerDashboard()
     {
         $user = auth()->user();
 
-        // Get employer's jobs
-        $employerJobs = Job::where('user_id', $user->id);
+        $stats = [
+            'totalJobs' => Job::where('user_id', $user->id)->count(),
+            'totalApplications' => Application::whereHas('job', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->count(),
+            'pendingApplications' => Application::whereHas('job', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->where('status', 'pending')->count(),
+        ];
 
-        // Calculate statistics
-        $totalJobs = $employerJobs->count();
-        $totalApplications = Application::whereHas('job', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->count();
+        $recentData = [
+            'recentJobs' => Job::where('user_id', $user->id)->withCount('applications')->latest()->take(5)->get(),
+            'recentApplications' => Application::whereHas('job', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->with(['job', 'user'])->latest()->take(5)->get(),
+        ];
 
-        $pendingApplications = Application::whereHas('job', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->where('status', 'pending')->count();
-
-        // Additional employer stats
-        $acceptedApplications = Application::whereHas('job', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->where('status', 'accepted')->count();
-
-        $underReviewApplications = Application::whereHas('job', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->where('status', 'under_review')->count();
-
-        // Get recent data
-        $recentJobs = $employerJobs->withCount('applications')
-            ->latest()
-            ->take(5)
-            ->get();
-
-        $recentApplications = Application::whereHas('job', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->with(['job', 'user'])
-            ->latest()
-            ->take(5)
-            ->get();
-
-        return view('dashboard', compact(
-            'totalJobs',
-            'totalApplications',
-            'pendingApplications',
-            'acceptedApplications',
-            'underReviewApplications',
-            'recentJobs',
-            'recentApplications'
-        ));
+        return view('dashboard', array_merge($stats, $recentData));
     }
 
-    private function jobSeekerDashboard()
+    private function getJobSeekerDashboard()
     {
         $user = auth()->user();
 
-        // Get job seeker's applications
-        $userApplications = Application::where('user_id', $user->id);
+        $stats = [
+            'totalApplications' => Application::where('user_id', $user->id)->count(),
+            'pendingApplications' => Application::where('user_id', $user->id)->where('status', 'pending')->count(),
+            'acceptedApplications' => Application::where('user_id', $user->id)->where('status', 'accepted')->count(),
+        ];
 
-        // Calculate statistics
-        $totalApplications = $userApplications->count();
-        $pendingApplications = $userApplications->where('status', 'pending')->count();
-        $acceptedApplications = $userApplications->where('status', 'accepted')->count();
-        $underReviewApplications = $userApplications->where('status', 'under_review')->count();
+        $recentData = [
+            'recentApplications' => Application::where('user_id', $user->id)->with(['job.company'])->latest()->take(5)->get(),
+            'featuredJobs' => Job::with(['company'])->where('is_active', true)->latest()->take(6)->get(),
+        ];
 
-        // Get recent data
-        $recentApplications = $userApplications->with('job')
-            ->latest()
-            ->take(5)
-            ->get();
+        return view('dashboard', array_merge($stats, $recentData));
+    }
 
-        $featuredJobs = Job::withCount('applications')
-            ->where('is_active', true)
-            ->latest()
-            ->take(6)
-            ->get();
+    private function getBasicDashboard()
+    {
+        // Basic dashboard data that should always work
+        $data = [
+            'user' => auth()->user(),
+            'totalJobs' => Job::where('is_active', true)->count(),
+        ];
 
-        return view('dashboard', compact(
-            'totalApplications',
-            'pendingApplications',
-            'acceptedApplications',
-            'underReviewApplications',
-            'recentApplications',
-            'featuredJobs'
-        ));
+        return view('dashboard', $data);
     }
 }

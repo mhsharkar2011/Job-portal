@@ -93,14 +93,15 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/categories/browse', [CategoryController::class, 'browse'])->name('categories.browse');
         Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
 
-        // Route::get('/admins/applications', [DashboardController::class, 'adminDashboardApplications'])->name('admin.applications.index');
-        // Route::get('/admins/jobs', [DashboardController::class, 'adminDashboardJobs'])->name('admin.jobs.index');
-        // Route::post('/admins/jobs/create', [DashboardController::class, 'adminDashboardJobsCreate'])->name('admin.jobs.create');
-        // Route::get('/users', [DashboardController::class, 'adminDashboardUsers'])->name('admin.users.index');
-        // Route::get('/admins/setting', [DashboardController::class, 'adminDashboardSettings '])->name('admin.settings');
+        // Use this instead - it already exists in your AdminController
+        Route::get('/admin/applications', [AdminController::class, 'applications'])->name('admin.applications.index');
+        Route::get('/admins/jobs', [DashboardController::class, 'adminDashboardJobs'])->name('admin.jobs.index');
+        Route::post('/admins/jobs/create', [DashboardController::class, 'adminDashboardJobsCreate'])->name('admin.jobs.create');
+        Route::get('/users', [DashboardController::class, 'adminDashboardUsers'])->name('admin.users.index');
+        Route::get('/admins/setting', [DashboardController::class, 'adminDashboardSettings '])->name('admin.settings');
 
         // API Routes for categories
-        // Route::get('/api/categories', [CategoryController::class, 'getCategories'])->name('api.categories');
+        Route::get('/api/categories', [CategoryController::class, 'getCategories'])->name('api.categories');
         // Company Routes
         Route::resource('companies', CompanyController::class);
         Route::get('/my-companies', [CompanyController::class, 'myCompanies'])->name('companies.my');
