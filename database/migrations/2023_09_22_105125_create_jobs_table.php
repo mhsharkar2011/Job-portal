@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('jobs');
-
         Schema::create('jobs', function (Blueprint $table) {
             $table->id();
-
+            // $table->foreignId('employer_id')->constrained('users')->onDelete('cascade');
             // Relationships
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('company_id')->nullable()->constrained()->onDelete('cascade');
@@ -39,7 +37,7 @@ return new class extends Migration
             // Salary information
             $table->integer('salary_minimum')->default(0);
             $table->integer('salary_maximum')->default(0);
-            $table->enum('salary_currency', ['USD', 'BDT', 'EUR', 'GBP'])->default('USD');
+            $table->enum('salary_currency', ['BDT', 'USD', 'EUR', 'GBP'])->default('BDT');
 
             // Skills and requirements
             $table->text('key_skills')->nullable();
@@ -51,6 +49,9 @@ return new class extends Migration
 
             // Job status
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_featured')->default(false);
+            $table->boolean('is_urgent')->default(false);
+            $table->timestamp('featured_until')->nullable();
             $table->timestamp('published_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamp('application_deadline')->nullable();
@@ -68,6 +69,8 @@ return new class extends Migration
             $table->index(['published_at', 'expires_at']);
             $table->index('accepting_applications');
             $table->index('application_deadline');
+            $table->index(['is_featured', 'is_active']);
+            $table->index(['is_urgent', 'is_active']);
         });
     }
 

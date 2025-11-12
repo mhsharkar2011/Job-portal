@@ -26,7 +26,7 @@ class User extends Authenticatable
         'profile_photo_path',
         'remove_photo',
         'password',
-        'role',
+        // 'role',
         'is_active'
     ];
 
@@ -60,13 +60,52 @@ class User extends Authenticatable
     // Add this relationship if using roles
     public function roles()
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(Role::class, 'role_user');
     }
 
     // Helper method to check role
     public function hasRole($role)
     {
-        return $this->roles()->where('name', $role)->exists();
+        if (is_string($role)) {
+            return $this->roles->contains('slug', $role);
+        }
+        return !! $role->intersect($this->roles)->count();
+        // return $this->roles()->where('name', $role)->exists();
+    }
+
+    public function isAdmin()
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function isEmployer()
+    {
+        return $this->hasRole('employer');
+    }
+
+    public function isSeeker()
+    {
+        return $this->hasRole('job-seeker');
+    }
+
+    // Assign role to user
+    public function assignRole($role)
+    {
+        if (is_string($role)) {
+            $role = Role::where('slug', $role)->firstOrFail();
+        }
+
+        $this->roles()->syncWithoutDetaching([$role->id]);
+    }
+
+    // Remove role from user
+    public function removeRole($role)
+    {
+        if (is_string($role)) {
+            $role = Role::where('slug', $role)->firstOrFail();
+        }
+
+        $this->roles()->detach($role->id);
     }
 
 
@@ -98,18 +137,18 @@ class User extends Authenticatable
         });
     }
 
-    public function applications(): HasMany
+    // Jobs Relationship (for employers)
+    public function jobs()
+    {
+        return $this->hasMany(Job::class, 'employer_id');
+    }
+
+    // Applications Relationship (for seekers)
+    public function applications()
     {
         return $this->hasMany(Application::class);
     }
 
-    /**
-     * Get the jobs posted by the user (if users can post jobs).
-     */
-    public function jobs(): HasMany
-    {
-        return $this->hasMany(Job::class);
-    }
 
 
     public function appliedJobs()

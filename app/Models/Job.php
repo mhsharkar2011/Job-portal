@@ -82,7 +82,7 @@ class Job extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class,'user_id');
     }
 
     /**
@@ -109,7 +109,6 @@ class Job extends Model
             ->where('user_id', auth()->id())
             ->exists();
     }
-
 
     /**
      * Scope a query to only include active jobs.

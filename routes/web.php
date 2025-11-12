@@ -40,12 +40,49 @@ Route::post('login', [AuthController::class, 'storeLogin'])->name('storeLogin');
 Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'storeRegister'])->name('storeRegister');
 
+
+
+
+// Employer routes
+Route::middleware(['auth', 'role:employer'])->group(function () {
+    Route::get('/employer/dashboard', [EmployerController::class, 'dashboard'])->name('employer.dashboard');
+    Route::resource('jobs', JobController::class);
+    Route::get('/jobs/{job}/applicants', [JobController::class, 'applicants'])->name('jobs.applicants');
+});
+
+
+// Admin routes
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    // Category Routes
+    Route::resource('categories', CategoryController::class);
+    Route::get('/categories/{category:slug}/jobs', [CategoryController::class, 'jobs'])->name('category.jobs');
+    Route::get('/categories/browse', [CategoryController::class, 'browse'])->name('categories.browse');
+    Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+
+    // Company Routes
+    Route::resource('companies', CompanyController::class);
+    Route::get('/my-companies', [CompanyController::class, 'myCompanies'])->name('companies.my');
+    Route::get('/companies/{company}/jobs', [CompanyController::class, 'jobs'])->name('company.jobs');
+
+    // Job Routes
+    Route::resource('jobs',JobController::class);
+    Route::get('/jobs/browse', [JobController::class, 'browse'])->name('jobs.browse');
+
+});
+
+// Seeker routes
+Route::middleware(['auth', 'role:seeker'])->group(function () {
+    Route::get('/seeker/dashboard', [SeekerController::class, 'dashboard'])->name('seeker.dashboard');
+    Route::post('/jobs/{job}/apply', [ApplicationController::class, 'store'])->name('jobs.apply');
+});
+
+
+
 Route::group(['middleware' => ['auth']], function () {
 
     // Route::prefix('admins')->group(function () {
 
     // });
-
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
@@ -87,11 +124,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::resource('resumes', ResumeController::class)->except(['index', 'create', 'store']);
         Route::get('get_states/{state}/edit', [ResumeController::class, 'getStates']);
 
-        // Category Routes
-        Route::resource('categories', CategoryController::class);
-        Route::get('/categories/{category:slug}/jobs', [CategoryController::class, 'jobs'])->name('category.jobs');
-        Route::get('/categories/browse', [CategoryController::class, 'browse'])->name('categories.browse');
-        Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show');
+
 
         // Use this instead - it already exists in your AdminController
         Route::get('users', [AdminController::class, 'adminUser'])->name('admin.users.index');
@@ -108,15 +141,9 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('/admins/jobs/create', [AdminController::class, 'adminDashboardJobsCreate'])->name('admin.jobs.create');
         Route::get('/admins/setting', [AdminController::class, 'adminDashboardSettings '])->name('admin.settings');
 
-        // API Routes for categories
-        Route::get('/api/categories', [CategoryController::class, 'getCategories'])->name('api.categories');
-        // Company Routes
-        Route::resource('companies', CompanyController::class);
-        Route::get('/my-companies', [CompanyController::class, 'myCompanies'])->name('companies.my');
-        Route::get('/companies/{company}/jobs', [CompanyController::class, 'jobs'])->name('company.jobs');
-        // Jobs APIs
+
+        // Jobs Route
         Route::get('jobs', [JobController::class, 'index'])->name('jobs.appliedJob');
-        // Create Jobs
         Route::Post('jobs', [JobController::class, 'store'])->name('jobs.postJob');
         Route::get('jobs/create', [JobController::class, 'create'])->name('jobs.create');
         Route::get('jobs/created-Job', [JobController::class, 'created'])->name('jobs.createdJob');
@@ -136,7 +163,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::put('/jobs/{job}', [JobController::class, 'update'])->name('jobs.update');
     Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->name('jobs.destroy');
     Route::post('/jobs/{job}/save', [JobController::class, 'save'])->name('jobs.save');
-    Route::get('/jobs/browse', [JobController::class, 'browse'])->name('jobs.browse');
 
 
     // Application Routes
@@ -161,6 +187,6 @@ Route::group(['middleware' => ['auth']], function () {
 require __DIR__ . '/auth.php';
 
 
-// Public job viewing (if needed)
+// Public routes
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');

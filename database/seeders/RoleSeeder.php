@@ -1,5 +1,4 @@
 <?php
-// database/seeders/RoleSeeder.php
 
 namespace Database\Seeders;
 
@@ -29,7 +28,12 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($roles as $role) {
-            Role::create($role);
+            Role::updateOrCreate(
+                ['slug' => $role['slug']],
+                $role
+            );
         }
+
+        $this->command->info('Successfully seeded/updated roles.');
     }
 }

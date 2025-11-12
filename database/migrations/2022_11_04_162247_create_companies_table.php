@@ -14,12 +14,13 @@ return new class extends Migration
         Schema::create('companies', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->string('website')->nullable();
             $table->text('about')->nullable();
-            $table->string('industry')->nullable();
+            // $table->string('industry')->nullable();
             $table->string('location')->nullable();
             $table->string('address')->nullable();
             $table->string('city')->nullable();
@@ -40,7 +41,7 @@ return new class extends Migration
 
             // Indexes
             $table->index('user_id');
-            $table->index('industry');
+            // $table->index('industry');
             $table->index('is_active');
         });
     }

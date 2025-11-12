@@ -30,7 +30,7 @@
         </div>
 
         <!-- Search Form -->
-        <form id="jobSearchForm" action="{{ route('jobs.browse') }}" method="GET" class="space-y-6">
+        <form id="jobSearchForm" action="{{ route('jobs.index') }}" method="GET" class="space-y-6">
             <!-- Keyword Search -->
             <div>
                 <label for="search" class="block text-sm font-medium text-gray-700 mb-2">What</label>
@@ -136,7 +136,7 @@
                         class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-all shadow-sm hover:shadow-md text-sm lg:text-base">
                     Apply Filters
                 </button>
-                <a href="{{ route('jobs.browse') }}"
+                <a href="{{ route('jobs.index') }}"
                    class="inline-flex items-center px-4 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-all text-sm lg:text-base">
                     Clear
                 </a>

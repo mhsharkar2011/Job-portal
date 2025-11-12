@@ -15,13 +15,13 @@
 
                 <!-- Primary Navigation -->
                 <div class="hidden lg:flex items-center space-x-1">
-                    <a href="{{ route('jobs.browse') }}"
-                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all
-                              {{ request()->is('jobs/browse') || (request()->is('jobs') && !request()->is('jobs/*/edit') && !request()->is('jobs/create')) ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                        <i class="fa-solid fa-magnifying-glass mr-2"></i>
-                        Browse Jobs
-                    </a>
 
+                     <a href="{{ route('categories.index') }}"
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all
+                              {{ request()->is('categories*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                        <i class="fa-solid fa-tags mr-2"></i>
+                        Categories
+                    </a>
                     <a href="{{ route('companies.index') }}"
                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all
                               {{ request()->is('companies*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
@@ -29,11 +29,11 @@
                         Companies
                     </a>
 
-                    <a href="{{ route('categories.index') }}"
+                     <a href="{{ route('jobs.create') }}"
                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all
-                              {{ request()->is('categories*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                        <i class="fa-solid fa-tags mr-2"></i>
-                        Categories
+                              {{ request()->is('auth/jobs/create') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                        <i class="fa-solid fa-plus mr-2"></i>
+                        Post Job
                     </a>
                 </div>
             </div>
@@ -43,11 +43,16 @@
                 <!-- Quick Actions -->
                 <div class="hidden md:flex items-center space-x-2">
                     <!-- Post Job Button -->
-                    <a href="{{ route('jobs.create') }}"
-                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-medium rounded-lg transition-all shadow-sm hover:shadow-md">
-                        <i class="fa-solid fa-plus mr-2"></i>
-                        Post Job
+
+                    <div class="hidden lg:flex items-center space-x-1">
+                    <a href="{{ route('jobs.index') }}"
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all
+                              {{ request()->is('jobs*') || (request()->is('jobs') && !request()->is('jobs/*/edit') && !request()->is('jobs/create')) ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                        <i class="fa-solid fa-magnifying-glass mr-2"></i>
+                        Browse Jobs
                     </a>
+                    </div>
+
 
                     <!-- My Resume -->
                     <a href="{{ route('resumes.edit', Auth::id()) }}"
@@ -167,7 +172,7 @@
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95"
              class="lg:hidden border-t border-gray-200 bg-white py-3 space-y-1 shadow-lg">
-            <a href="{{ route('jobs.browse') }}"
+            <a href="{{ route('jobs.index') }}"
                class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
                @click="mobileMenuOpen = false">
                 <i class="fa-solid fa-magnifying-glass w-5"></i>
