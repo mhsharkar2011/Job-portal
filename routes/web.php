@@ -65,9 +65,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/companies/{company}/jobs', [CompanyController::class, 'jobs'])->name('company.jobs');
 
     // Job Routes
-    Route::resource('jobs',JobController::class);
-    Route::get('/jobs/browse', [JobController::class, 'browse'])->name('jobs.browse');
-
+    Route::resource('jobs', JobController::class);
 });
 
 // Seeker routes
@@ -97,6 +95,7 @@ Route::group(['middleware' => ['auth']], function () {
         // Route::delete('/users/{user}', [AdminController::class, 'userDestroy'])->name('users.destroy');
 
         // Job Management
+
         Route::get('/jobs', [AdminController::class, 'jobs'])->name('jobs.index');
         Route::get('/jobs/create', [AdminController::class, 'create'])->name('admin.jobs.create');
         Route::get('/jobs', [AdminController::class, 'jobs'])->name('jobs.index');
@@ -190,3 +189,4 @@ require __DIR__ . '/auth.php';
 // Public routes
 Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
+Route::get('browse', [JobController::class, 'browse'])->name('jobs.browse');
