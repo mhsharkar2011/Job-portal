@@ -8,6 +8,8 @@ use App\Models\Application;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
@@ -73,7 +75,7 @@ class AdminController extends Controller
         ));
     }
 
-    public function adminUser(Request $request)
+    public function index(Request $request)
     {
         $query = User::query();
 
@@ -106,7 +108,56 @@ class AdminController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
-    public function adminUserShow(User $user)
+    public function create()
+    {
+        $roles = Role::all();
+        return view('admin.users.create', compact('roles'));
+    }
+
+    public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users',
+        'phone' => 'nullable|string|max:20',
+        'address' => 'nullable|string|max:500',
+        'password' => 'required|min:8|confirmed',
+        'roles' => 'required|array|min:1',
+        'roles.*' => 'exists:roles,id',
+    ]);
+
+    try {
+        DB::transaction(function () use ($request) {
+            // Create user
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'password' => Hash::make($request->password),
+                'email_verified_at' => $request->email_verified ? now() : null,
+            ]);
+
+            // Assign roles
+            $user->roles()->sync($request->roles);
+
+            // If email is not verified and you want to send verification, uncomment:
+            // if (!$request->email_verified) {
+            //     event(new Registered($user));
+            // }
+        });
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User created successfully.');
+
+    } catch (\Exception $e) {
+        Log::error('User creation error: ' . $e->getMessage());
+        return back()->with('error', 'Failed to create user. Please try again.')
+                    ->withInput();
+    }
+}
+
+    public function show(User $user)
     {
         $user->loadCount(['jobs', 'applications']);
 
@@ -193,7 +244,7 @@ class AdminController extends Controller
         }
     }
 
-    public function adminUserDestroy(User $user)
+    public function destroy(User $user)
     {
         // Prevent admin from deleting themselves
         if ($user->id === auth()->id()) {
@@ -207,6 +258,7 @@ class AdminController extends Controller
             ->with('success', 'User deleted successfully.');
     }
 
+    // Jobs------------------------------------------------------------------------
     public function jobs(Request $request)
     {
         $query = Job::with(['user', 'applications']);
@@ -273,7 +325,7 @@ class AdminController extends Controller
         return redirect()->route('admin.jobs.index')
             ->with('success', 'Job deleted successfully.');
     }
-
+    // Applications ---------------------------------------------------------------------
     public function applications(Request $request)
     {
         $query = Application::with(['job', 'user']);
@@ -318,6 +370,41 @@ class AdminController extends Controller
             ->with('success', 'Application status updated successfully.');
     }
 
+    // Download Reports
+    public function applicationsDownload()
+    {
+        // Generate various reports
+        $popularJobs = Job::withCount('applications')
+            ->orderBy('applications_count', 'desc')
+            ->take(10)
+            ->get();
+
+        $topEmployers = User::where('role', 'employer')
+            ->withCount('jobs')
+            ->orderBy('jobs_count', 'desc')
+            ->take(10)
+            ->get();
+
+        $applicationStats = Application::select('status', DB::raw('COUNT(*) as count'))
+            ->groupBy('status')
+            ->get();
+
+        return view('admin.reports', compact(
+            'popularJobs',
+            'topEmployers',
+            'applicationStats'
+        ));
+    }
+
+    public function applicationsDestroy(Job $job)
+    {
+        $job->delete();
+
+        return redirect()->route('admin.jobs.index')
+            ->with('success', 'Job deleted successfully.');
+    }
+
+    // Admin Setting -----------------------------------------------------------------
     public function settings()
     {
         return view('admin.settings');
@@ -338,15 +425,6 @@ class AdminController extends Controller
 
         return redirect()->route('admin.settings')
             ->with('success', 'Settings updated successfully.');
-    }
-
-
-    public function applicationsDestroy(Job $job)
-    {
-        $job->delete();
-
-        return redirect()->route('admin.jobs.index')
-            ->with('success', 'Job deleted successfully.');
     }
 
     // Admin Reports
@@ -489,34 +567,5 @@ class AdminController extends Controller
         }
 
         return (($current - $previous) / $previous) * 100;
-    }
-
-
-
-    // Download Reports
-
-    public function applicationsDownload()
-    {
-        // Generate various reports
-        $popularJobs = Job::withCount('applications')
-            ->orderBy('applications_count', 'desc')
-            ->take(10)
-            ->get();
-
-        $topEmployers = User::where('role', 'employer')
-            ->withCount('jobs')
-            ->orderBy('jobs_count', 'desc')
-            ->take(10)
-            ->get();
-
-        $applicationStats = Application::select('status', DB::raw('COUNT(*) as count'))
-            ->groupBy('status')
-            ->get();
-
-        return view('admin.reports', compact(
-            'popularJobs',
-            'topEmployers',
-            'applicationStats'
-        ));
     }
 }

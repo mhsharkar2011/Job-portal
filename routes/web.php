@@ -26,7 +26,20 @@ Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'storeRegister'])->name('storeRegister');
 
 // Admin routes
-Route::prefix('admin')->name('admin')->middleware(['auth', 'role:admin'])->group(function () {
+Route::group(['middleware' => ['auth', 'role:admin']], function () {
+    Route::prefix('admin')->name('admin.')->group(function(){
+        // Route::resource('users', AdminController::class);
+
+        // User Management
+        Route::get('/users/create', [AdminController::class, 'create'])->name('users.create');
+        Route::post('/users', [AdminController::class, 'store'])->name('users.store');
+        Route::get('/users', [AdminController::class, 'index'])->name('users.index');
+
+    });
+});
+
+
+Route::prefix('auth')->name('admin.')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'adminDashboard'])->name('dashboard');
     // Category Routes
     Route::resource('categories', CategoryController::class);
@@ -112,7 +125,7 @@ Route::group(['middleware' => ['auth']], function () {
 
 
         // Use this instead - it already exists in your AdminController
-        Route::get('users', [AdminController::class, 'adminUser'])->name('admin.users.index');
+
         // Route::get('/admins/users', [AdminController::class, 'adminDashboardCreate'])->name('admin.users.create');
         Route::get('admin/users/{user}', [AdminController::class, 'adminUserShow'])->name('admin.users.show');
         Route::get('/admins/users/{user}/edit', [AdminController::class, 'adminUserEdit'])->name('admin.users.edit');
