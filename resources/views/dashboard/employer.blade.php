@@ -213,6 +213,7 @@
                             <div class="ml-4">
                                 <h4 class="text-sm font-medium text-gray-900">View Applications</h4>
                                 <p class="text-sm text-gray-500">Manage job applications</p>
+
                             </div>
                         </a>
                     </div>

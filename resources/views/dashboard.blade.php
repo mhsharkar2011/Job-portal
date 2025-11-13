@@ -7,18 +7,20 @@
                     Welcome back, {{ auth()->user()->name }}!
                 </h1>
                 <p class="text-gray-600 mt-2">
-                    @if (auth()->user()->role === 'employer')
+                    @if (auth()->user()->isEmployer())
                         Here's what's happening with your job postings today.
+                    @elseif (auth()->user()->isAdmin())
+                        System overview and recent activity.
                     @else
                         Your job search journey at a glance.
                     @endif
                 </p>
             </div>
 
-            @if (auth()->user()->role === 'admin')
+            @if (auth()->user()->isAdmin())
                 <!-- Admin Dashboard -->
                 @include('dashboard.admin')
-            @elseif (auth()->user()->role === 'employer')
+            @elseif (auth()->user()->isEmployer())
                 <!-- Employer Dashboard -->
                 @include('dashboard.employer')
             @else

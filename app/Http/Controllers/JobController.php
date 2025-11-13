@@ -15,6 +15,12 @@ use function Ramsey\Uuid\v1;
 
 class JobController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth')->except(['index', 'show', 'browse']);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -247,29 +253,71 @@ class JobController extends Controller
 
         return view('jobs.edit', compact('job', 'categories', 'companies'));
     }
-
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Job $job)
     {
-        $input = $request->except('logo');
-        if ($job->logo && $request->hasFile('logo')) {
-            Storage::delete('public/jobs/logo/' . $job->logo);
-            $job->logo = null;
+        // Check if user owns the job
+        if ($job->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
         }
 
-        if ($request->hasFile('logo')) {
-            $logo = $request->file('logo');
-            $filename = $job->id . '-' . $job->job_title . '-' . date('Ymd') . '.' . $logo->getClientOriginalExtension();
-            $logo->storeAs('public/jobs/logos', $filename);
-            $job->logo = $filename;
-            $job->save();
+        // Use the same validation rules as store (make fields nullable if needed for update)
+        $rules = [
+            'company_id' => 'required|exists:companies,id',
+            'category_id' => 'required|exists:categories,id',
+            'job_title' => 'required|string|max:255',
+            'job_description' => 'required|string|min:50',
+            'requirement' => 'required|string|min:50',
+            'location' => 'required|string|max:255',
+            'experience_minimum' => 'required|integer|min:0',
+            'experience_maximum' => 'required|integer|min:0|gte:experience_minimum',
+            'experience_unit' => 'required|in:years,months',
+            'role' => 'required|string|max:255',
+            'employment_type' => 'required|in:full-time,part-time,contract,freelance,internship',
+            'salary_minimum' => 'required|integer|min:0',
+            'salary_maximum' => 'required|integer|min:0|gte:salary_minimum',
+            'salary_currency' => 'required|in:USD,BDT,EUR,GBP',
+            'key_skills' => 'required|string|min:3',
+            'positions_available' => 'required|integer|min:1|max:100',
+            'application_deadline' => 'nullable|date|after:today',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ];
+
+        $validated = $request->validate($rules);
+
+        try {
+            return DB::transaction(function () use ($validated, $request, $job) {
+                // Authorization check for company
+                $company = Company::findOrFail($validated['company_id']);
+                if ($company->user_id !== auth()->id()) {
+                    throw new \Exception('You are not authorized to update jobs for this company.');
+                }
+
+                // Handle file upload
+                if ($request->hasFile('logo')) {
+                    // Delete old logo if exists
+                    if ($job->logo) {
+                        Storage::disk('public')->delete($job->logo);
+                    }
+                    $validated['logo'] = $request->file('logo')->store('company-logos', 'public');
+                } else {
+                    // Keep existing logo if no new file uploaded
+                    unset($validated['logo']);
+                }
+
+                // Update job
+                $job->update($validated);
+
+                return redirect()->route('jobs.createdJob')
+                    ->with('success', 'Job updated successfully!');
+            });
+        } catch (\Exception $e) {
+            Log::error('Job update error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to update job. Please try again.')->withInput();
         }
-        $job->update($input);
-        return redirect()->route('jobs.createdJob')->with('success', 'Job Updated Successfully');
     }
-
     /**
      * Remove the specified resource from storage.
      */
@@ -289,7 +337,4 @@ class JobController extends Controller
 
         return redirect()->route('jobs.createdJob')->with('success', 'Job Deleted Successfully');
     }
-
-
-    
 }

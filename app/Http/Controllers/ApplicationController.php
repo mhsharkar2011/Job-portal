@@ -20,7 +20,7 @@ class ApplicationController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('applications.index', compact('applications','job'));
+        return view('applications.index', compact('applications', 'job'));
     }
 
 
@@ -105,7 +105,6 @@ class ApplicationController extends Controller
 
             return redirect()->route('jobs.show', $job)
                 ->with('success', 'Application submitted successfully! We will review your application and get back to you soon.');
-
         } catch (\Exception $e) {
             Log::error('Application submission error: ' . $e->getMessage());
 
@@ -161,7 +160,6 @@ class ApplicationController extends Controller
 
             return redirect()->route('applications.index')
                 ->with('success', 'Application withdrawn successfully.');
-
         } catch (\Exception $e) {
             Log::error('Application deletion error: ' . $e->getMessage());
             return back()->with('error', 'Failed to withdraw application. Please try again.');
@@ -212,10 +210,53 @@ class ApplicationController extends Controller
             ]);
 
             return back()->with('success', 'Application status updated successfully.');
-
         } catch (\Exception $e) {
             Log::error('Application status update error: ' . $e->getMessage());
             return back()->with('error', 'Failed to update application status.');
         }
+    }
+
+    // Method to view applications for a specific job
+    public function jobApplications(Job $job)
+    {
+        // Authorization - only job owner can view applications
+        if ($job->user_id !== auth()->id()) { // Changed to user_id
+            abort(403, 'Unauthorized action.');
+        }
+
+        $applications = Application::with(['user'])
+            ->where('job_id', $job->id)
+            ->latest()
+            ->paginate(10);
+
+        return view('applications.index', compact('job', 'applications'));
+    }
+
+     public function downloadResume(Application $application)
+    {
+        // Authorization - only job owner can download resumes
+        if ($application->job->user_id !== auth()->id()) { // Changed to user_id
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (!Storage::disk('public')->exists($application->resume_path)) {
+            abort(404, 'Resume file not found.');
+        }
+
+        return Storage::disk('public')->download($application->resume_path);
+    }
+
+     public function downloadCoverLetter(Application $application)
+    {
+        // Authorization - only job owner can download cover letters
+        if ($application->job->user_id !== auth()->id()) { // Changed to user_id
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (!$application->cover_letter_path || !Storage::disk('public')->exists($application->cover_letter_path)) {
+            abort(404, 'Cover letter file not found.');
+        }
+
+        return Storage::disk('public')->download($application->cover_letter_path);
     }
 }

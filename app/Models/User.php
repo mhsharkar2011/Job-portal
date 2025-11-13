@@ -63,15 +63,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class, 'role_user');
     }
 
-    // Helper method to check role
-    public function hasRole($role)
+    public function hasRole($roleSlug)
     {
-        if (is_string($role)) {
-            return $this->roles->contains('slug', $role);
-        }
-        return !! $role->intersect($this->roles)->count();
-        // return $this->roles()->where('name', $role)->exists();
+        return $this->roles()->where('slug', $roleSlug)->exists();
     }
+
 
     public function isAdmin()
     {
@@ -140,7 +136,7 @@ class User extends Authenticatable
     // Jobs Relationship (for employers)
     public function jobs()
     {
-        return $this->hasMany(Job::class, 'employer_id');
+        return $this->hasMany(Job::class, 'user_id');
     }
 
     // Applications Relationship (for seekers)

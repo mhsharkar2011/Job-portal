@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Job;
 use App\Models\Application;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -17,13 +18,17 @@ class AdminController extends Controller
         $this->middleware('role:admin');
     }
 
-    public function dashboard()
+    public function adminDashboard()
     {
+        // Get role IDs for faster queries
+        $employerRole = Role::where('slug', 'employer')->first();
+        $seekerRole = Role::where('slug', 'job-seeker')->first();
+
         // System overview statistics
         $stats = [
             'totalUsers' => User::count(),
-            'totalEmployers' => User::where('role', 'employer')->count(),
-            'totalJobSeekers' => User::where('role', 'job_seeker')->count(),
+            'totalEmployers' => $employerRole ? $employerRole->users()->count() : 0,
+            'totalJobSeekers' => $seekerRole ? $seekerRole->users()->count() : 0,
             'totalJobs' => Job::count(),
             'activeJobs' => Job::where('is_active', true)->count(),
             'totalApplications' => Application::count(),
@@ -33,7 +38,8 @@ class AdminController extends Controller
         ];
 
         // Recent activity
-        $recentUsers = User::withCount(['jobs', 'applications'])
+        $recentUsers = User::with(['roles', 'jobs', 'applications'])
+            ->withCount(['jobs', 'applications'])
             ->latest()
             ->take(5)
             ->get();
@@ -52,14 +58,13 @@ class AdminController extends Controller
         // Monthly registration stats for chart
         $monthlyRegistrations = User::select(
             DB::raw('MONTH(created_at) as month'),
-            DB::raw('COUNT(*) as count'),
-            DB::raw('role')
+            DB::raw('COUNT(*) as count')
         )
             ->whereYear('created_at', date('Y'))
-            ->groupBy('month', 'role')
+            ->groupBy('month')
             ->get();
 
-        return view('admin.dashboard', compact(
+        return view('dashboard.admin', compact(
             'stats',
             'recentUsers',
             'recentJobs',
@@ -336,7 +341,7 @@ class AdminController extends Controller
     }
 
 
-        public function applicationsDestroy(Job $job)
+    public function applicationsDestroy(Job $job)
     {
         $job->delete();
 

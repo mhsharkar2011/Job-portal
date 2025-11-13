@@ -31,16 +31,14 @@ class HomeController extends Controller
 
         $totalJobs = Job::where('is_active', true)->count();
         $totalCompanies = Company::where('is_active', true)->count();
-        $newJobs = Job::where('is_active', true)
-            ->where('created_at', '>=', now()->subWeek())
-            ->count();
+        $newJobs = Job::where('is_active', true)->where('created_at', '>=', now()->subWeek())->count();
 
         return view('welcome', compact(
-            'companies',
             'categories',
+            'companies',
+            'totalCompanies',
             'jobs',
             'totalJobs',
-            'totalCompanies',
             'newJobs'
         ));
     }

@@ -12,8 +12,8 @@ class Job extends Model
 
     protected $fillable = [
         'user_id',
-        'company_id',
         'category_id',
+        'company_id',
         'job_title',
         'job_description',
         'requirement',
@@ -64,11 +64,6 @@ class Job extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function companies()
-    {
-        return $this->hasMany(Company::class);
-    }
-
     /**
      * Get the category that owns the job.
      */
@@ -92,7 +87,6 @@ class Job extends Model
     {
         return $this->hasMany(Application::class);
     }
-
 
     public function applicationsCount()
     {
