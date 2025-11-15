@@ -75,6 +75,7 @@ class AdminController extends Controller
         ));
     }
 
+    // Admin User Management -----------------------------------------------------------------------------------
     public function index(Request $request)
     {
         $query = User::query();
@@ -115,71 +116,128 @@ class AdminController extends Controller
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users',
-        'phone' => 'nullable|string|max:20',
-        'address' => 'nullable|string|max:500',
-        'password' => 'required|min:8|confirmed',
-        'roles' => 'required|array|min:1',
-        'roles.*' => 'exists:roles,id',
-    ]);
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
+            'password' => 'required|min:8|confirmed',
+            'roles' => 'required|array|min:1',
+            'roles.*' => 'exists:roles,id',
+        ]);
 
-    try {
-        DB::transaction(function () use ($request) {
-            // Create user
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'address' => $request->address,
-                'password' => Hash::make($request->password),
-                'email_verified_at' => $request->email_verified ? now() : null,
-            ]);
+        try {
+            DB::transaction(function () use ($request) {
+                // Create user
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'address' => $request->address,
+                    'password' => Hash::make($request->password),
+                    'email_verified_at' => $request->email_verified ? now() : null,
+                ]);
 
-            // Assign roles
-            $user->roles()->sync($request->roles);
+                // Assign roles
+                $user->roles()->sync($request->roles);
 
-            // If email is not verified and you want to send verification, uncomment:
-            // if (!$request->email_verified) {
-            //     event(new Registered($user));
-            // }
-        });
+                // If email is not verified and you want to send verification, uncomment:
+                // if (!$request->email_verified) {
+                //     event(new Registered($user));
+                // }
+            });
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User created successfully.');
-
-    } catch (\Exception $e) {
-        Log::error('User creation error: ' . $e->getMessage());
-        return back()->with('error', 'Failed to create user. Please try again.')
-                    ->withInput();
+            return redirect()->route('admin.users.index')
+                ->with('success', 'User created successfully.');
+        } catch (\Exception $e) {
+            Log::error('User creation error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to create user. Please try again.')
+                ->withInput();
+        }
     }
-}
 
     public function show(User $user)
     {
-        $user->loadCount(['jobs', 'applications']);
+        // Load counts and roles relationship
+        $user->loadCount(['jobs', 'applications', 'roles']);
+        $user->load('roles');
 
-        if ($user->role === 'employer') {
-            $user->load(['jobs' => function ($query) {
-                $query->withCount('applications')->latest();
-            }]);
-        } elseif ($user->role === 'job_seeker') {
-            $user->load(['applications' => function ($query) {
-                $query->with('job')->latest();
-            }]);
+        // Get the primary role (first role assigned to user)
+        $primaryRole = $user->roles->first();
+        $roleName = $primaryRole ? $primaryRole->name : 'No Role';
+        $roleSlug = $primaryRole ? $primaryRole->slug : null;
+
+        // Load data based on user's primary role
+        if ($roleSlug === 'admin') {
+            $user->load([
+                'jobs' => function ($query) {
+                    $query->withCount('applications')->latest();
+                },
+                'applications'
+            ]);
+
+            // Add admin-specific statistics
+            $stats = [
+                'total_users' => \App\Models\User::count(),
+                'total_jobs' => \App\Models\Job::count(),
+                'total_applications' => \App\Models\Application::count(),
+                'total_companies' => \App\Models\Company::count(),
+                'pending_jobs' => \App\Models\Job::where('status', 'pending')->count(),
+                'active_jobs' => \App\Models\Job::where('status', 'active')->count(),
+            ];
+
+            return view('admin.users.show', compact('user', 'stats', 'roleName'));
+        } elseif ($roleSlug === 'employer') {
+            $user->load([
+                'jobs' => function ($query) {
+                    $query->withCount('applications')
+                        ->with(['category', 'company'])
+                        ->latest();
+                },
+                'company'
+            ]);
+
+            // Add employer-specific statistics
+            $user->active_jobs_count = $user->jobs->where('status', 'active')->count();
+            $user->draft_jobs_count = $user->jobs->where('status', 'draft')->count();
+            $user->total_applications_received = $user->jobs->sum('applications_count');
+        } elseif ($roleSlug === 'job-seeker') {
+            $user->load([
+                'applications' => function ($query) {
+                    $query->with([
+                        'job' => function ($jobQuery) {
+                            $jobQuery->with(['company', 'category']);
+                        }
+                    ])->latest();
+                },
+                'resume',
+                'appliedJobs' => function ($query) {
+                    $query->with(['company', 'category']);
+                }
+            ]);
+
+            // Add seeker-specific statistics
+            $user->application_stats = [
+                'total' => $user->applications_count,
+                'pending' => $user->applications->where('status', 'pending')->count(),
+                'accepted' => $user->applications->where('status', 'accepted')->count(),
+                'rejected' => $user->applications->where('status', 'rejected')->count(),
+            ];
+        } else {
+            // For users with no role or other roles
+            $user->load(['jobs', 'applications']);
         }
 
-        return view('admin.users.show', compact('user'));
+        return view('admin.users.show', compact('user', 'roleName'));
     }
 
-    public function adminUserEdit(User $user)
+    public function edit(User $user)
     {
         return view('admin.users.edit', compact('user'));
     }
 
-    public function adminUserUpdate(Request $request, User $user)
+    public function update(Request $request, User $user)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -258,47 +316,7 @@ class AdminController extends Controller
             ->with('success', 'User deleted successfully.');
     }
 
-    // Jobs------------------------------------------------------------------------
-    public function jobs(Request $request)
-    {
-        $query = Job::with(['user', 'applications']);
-
-        // Search filter
-        if ($request->has('search') && $request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('job_title', 'like', '%' . $request->search . '%')
-                    ->orWhere('company_name', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        // Status filter
-        if ($request->has('status') && $request->status) {
-            if ($request->status === 'active') {
-                $query->where('is_active', true);
-            } elseif ($request->status === 'inactive') {
-                $query->where('is_active', false);
-            }
-        }
-
-        $jobs = $query->withCount('applications')
-            ->latest()
-            ->paginate(10);
-
-        return view('admin.jobs.index', compact('jobs'));
-    }
-
-    public function jobShow(Job $job)
-    {
-        $job->load(['user', 'applications.user']);
-
-        return view('admin.jobs.show', compact('job'));
-    }
-
-    public function jobEdit(Job $job)
-    {
-        return view('admin.jobs.edit', compact('job'));
-    }
-
+    // User Management end --------------------------------------------------------
     public function jobUpdate(Request $request, Job $job)
     {
         $validated = $request->validate([

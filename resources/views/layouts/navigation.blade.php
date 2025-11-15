@@ -29,7 +29,7 @@
                         Companies
                     </a>
 
-                     <a href="{{ route('jobs.create') }}"
+                     <a href="{{ route('admin.jobs.create') }}"
                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all
                               {{ request()->is('auth/jobs/create') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-plus mr-2"></i>
@@ -45,9 +45,9 @@
                     <!-- Post Job Button -->
 
                     <div class="hidden lg:flex items-center space-x-1">
-                    <a href="{{ route('jobs.index') }}"
+                    <a href="{{ route('admin.jobs.index') }}"
                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all
-                              {{ request()->is('jobs*') || (request()->is('jobs') && !request()->is('jobs/*/edit') && !request()->is('jobs/create')) ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                              {{ request()->is('admin/jobs*') || (request()->is('admin/jobs') && !request()->is('admin/jobs/*/edit') && !request()->is('jobs/create')) ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-magnifying-glass mr-2"></i>
                         Browse Jobs
                     </a>
@@ -111,7 +111,7 @@
                                 <i class="fa-solid fa-briefcase w-4 text-gray-400 group-hover:text-blue-600"></i>
                                 <span>My Job Posts</span>
                             </a>
-                            <a href="{{ route('jobs.appliedJob') }}"
+                            <a href="{{ route('jobs.index') }}"
                                class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
                                 <i class="fa-solid fa-file-circle-check w-4 text-gray-400 group-hover:text-blue-600"></i>
                                 <span>Applications</span>
@@ -211,7 +211,7 @@
                     <i class="fa-solid fa-briefcase w-5"></i>
                     <span class="font-medium">My Job Posts</span>
                 </a>
-                <a href="{{ route('jobs.appliedJob') }}"
+                <a href="{{ route('jobs.index') }}"
                    class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
                    @click="mobileMenuOpen = false">
                     <i class="fa-solid fa-file-circle-check w-5"></i>

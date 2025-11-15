@@ -24,7 +24,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Total Jobs</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['total'] }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['total'] ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -40,7 +40,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Active Jobs</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['active'] }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['active'] ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -56,7 +56,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Inactive Jobs</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['inactive'] }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['inactive'] ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -72,7 +72,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Total Applications</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['applications'] }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['applications'] ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -102,6 +102,8 @@
                                     <option value="">All Statuses</option>
                                     <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
                                     <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                                 </select>
                             </div>
                             <div>
@@ -109,7 +111,7 @@
                                 <select name="category_id" id="category_id"
                                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">All Categories</option>
-                                    @foreach($categories as $category)
+                                    @foreach($categories ?? [] as $category)
                                         <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
                                             {{ $category->name }}
                                         </option>
@@ -156,34 +158,37 @@
                                         <div class="flex items-center justify-between">
                                             <div class="flex-1">
                                                 <h4 class="text-sm font-semibold text-gray-900 truncate">
-                                                    {{ $job->job_title }}
+                                                    {{ $job->title }}
                                                 </h4>
                                                 <p class="text-sm text-gray-500 mt-1">
-                                                    {{ $job->company->name }} • {{ $job->location }}
+                                                    {{ $job->company->name ?? 'No Company' }} • {{ $job->location }}
                                                 </p>
                                                 <div class="mt-2 flex items-center space-x-4">
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                        @if($job->is_active) bg-green-100 text-green-800
-                                                        @else bg-red-100 text-red-800 @endif">
-                                                        {{ $job->is_active ? 'Active' : 'Inactive' }}
+                                                        @if($job->status === 'active') bg-green-100 text-green-800
+                                                        @elseif($job->status === 'draft') bg-gray-100 text-gray-800
+                                                        @elseif($job->status === 'pending') bg-yellow-100 text-yellow-800
+                                                        @elseif($job->status === 'expired') bg-red-100 text-red-800
+                                                        @else bg-gray-100 text-gray-800 @endif">
+                                                        {{ ucfirst($job->status) }}
                                                     </span>
                                                     <span class="text-sm text-gray-500">
                                                         Posted {{ $job->created_at->diffForHumans() }}
                                                     </span>
                                                     <span class="text-sm text-gray-500">
-                                                        {{ $job->employment_type }}
+                                                        {{ ucfirst(str_replace('-', ' ', $job->employment_type)) }}
                                                     </span>
                                                     <span class="text-sm text-gray-500">
-                                                        {{ $job->applications_count }} applications
+                                                        {{ $job->applications_count ?? 0 }} applications
                                                     </span>
                                                 </div>
                                             </div>
                                             <div class="ml-4 flex-shrink-0">
                                                 <p class="text-sm font-medium text-gray-900">
-                                                    {{ $job->category->name }}
+                                                    {{ $job->category->name ?? 'No Category' }}
                                                 </p>
                                                 <p class="text-sm text-gray-500">
-                                                    by {{ $job->user->name }}
+                                                    by {{ $job->user->name ?? 'Unknown User' }}
                                                 </p>
                                             </div>
                                         </div>
@@ -194,11 +199,11 @@
                                             <i class="fa-solid fa-eye mr-1"></i>
                                             View
                                         </a>
-                                        <a href="{{ route('admin.jobs.applications', $job) }}"
+                                        {{-- <a href="{{ route('admin.jobs.applications', $job) }}"
                                            class="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                                             <i class="fa-solid fa-file-lines mr-1"></i>
                                             Applications
-                                        </a>
+                                        </a> --}}
                                     </div>
                                 </div>
                             </li>
