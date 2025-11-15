@@ -15,7 +15,7 @@ class DashboardController extends Controller
 
         try {
             // Check user role with fallback
-            $role = $user->role ?? 'job_seeker';
+            $role = $user->role ?? 'job-seeker';
 
             switch ($role) {
                 case 'admin':

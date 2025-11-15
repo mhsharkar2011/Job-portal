@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Application;
+use App\Models\Job;
 use Illuminate\Http\Request;
 
 class SeekerController extends Controller
@@ -9,9 +11,14 @@ class SeekerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Job $job)
     {
-        //
+        $applications = Application::with(['job', 'job.company'])
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->paginate(10);
+
+        return view('seekers.jobs.index',compact('applications','job'));
     }
 
     /**

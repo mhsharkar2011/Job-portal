@@ -16,21 +16,21 @@
                 <!-- Primary Navigation -->
                 <div class="hidden lg:flex items-center space-x-1">
 
-                     <a href="{{ route('categories.index') }}"
-                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all
+                    <a href="{{ route('categories.index') }}"
+                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all
                               {{ request()->is('categories*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-tags mr-2"></i>
                         Categories
                     </a>
                     <a href="{{ route('companies.index') }}"
-                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all
+                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all
                               {{ request()->is('companies*') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-building mr-2"></i>
                         Companies
                     </a>
 
-                     <a href="{{ route('admin.jobs.create') }}"
-                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all
+                    <a href="{{ route('admin.jobs.create') }}"
+                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all
                               {{ request()->is('auth/jobs/create') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-plus mr-2"></i>
                         Post Job
@@ -45,25 +45,197 @@
                     <!-- Post Job Button -->
 
                     <div class="hidden lg:flex items-center space-x-1">
-                    <a href="{{ route('admin.jobs.index') }}"
-                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all
+                        <a href="{{ route('admin.jobs.index') }}"
+                            class="px-4 py-2 text-sm font-medium rounded-lg transition-all
                               {{ request()->is('admin/jobs*') || (request()->is('admin/jobs') && !request()->is('admin/jobs/*/edit') && !request()->is('jobs/create')) ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                        <i class="fa-solid fa-magnifying-glass mr-2"></i>
-                        Browse Jobs
-                    </a>
+                            <i class="fa-solid fa-magnifying-glass mr-2"></i>
+                            Browse Jobs
+                        </a>
                     </div>
 
 
-                    <!-- My Resume -->
-                    <a href="{{ route('resumes.edit', Auth::id()) }}"
-                       class="inline-flex items-center px-3 py-2 text-gray-600 hover:text-blue-600 text-sm font-medium rounded-lg transition-all hover:bg-gray-100">
-                        <i class="fa-solid fa-file-lines mr-2"></i>
-                        Resume
-                    </a>
+                    <!-- My Resume Dropdown -->
+                    <div class="relative" x-data="{ resumeDropdown: false }">
+                        <button @click="resumeDropdown = !resumeDropdown"
+                            class="inline-flex items-center px-3 py-2 text-gray-600 hover:text-blue-600 text-sm font-medium rounded-lg transition-all hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <i class="fa-solid fa-file-lines mr-2"></i>
+                            Resume
+                            <i class="fa-solid fa-chevron-down ml-1 text-xs transition-transform duration-200"
+                                :class="{ 'rotate-180': resumeDropdown }"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div x-show="resumeDropdown" @click.away="resumeDropdown = false"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="transform opacity-100 scale-100"
+                            x-transition:leave-end="transform opacity-0 scale-95"
+                            class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+
+                            <!-- Create Resume -->
+                            <a href="{{ route('seeker.resumes.create') }}"
+                                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150 group">
+                                <i class="fa-solid fa-plus-circle mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                                Create New Resume
+                            </a>
+
+                            <!-- View/Edit Resume -->
+                            @auth
+                                @php
+                                    $user = auth()->user();
+                                    $hasResume = $user->resume ?? false;
+                                @endphp
+                                @if ($hasResume)
+                                    <a href="{{ route('seeker.resumes.edit', $user->resume->id) }}"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150 group">
+                                        <i class="fa-solid fa-edit mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                                        Edit My Resume
+                                    </a>
+
+                                    <a href="{{ route('seeker.resumes.show', $user->resume->id) }}"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150 group">
+                                        <i class="fa-solid fa-eye mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                                        View Resume
+                                    </a>
+                                @else
+                                    <div class="flex items-center px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
+                                        <i class="fa-solid fa-edit mr-3"></i>
+                                        Edit Resume
+                                        <span class="ml-2 text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded">No
+                                            resume</span>
+                                    </div>
+                                @endif
+                            @endauth
+
+                            <div class="border-t border-gray-100 my-1"></div>
+
+                            <!-- Print & Download Section -->
+                            @auth
+                                @if ($hasResume)
+                                    <!-- Print Resume -->
+                                    <button onclick="printResume()"
+                                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors duration-150 group">
+                                        <i class="fa-solid fa-print mr-3 text-gray-400 group-hover:text-green-600"></i>
+                                        Print Resume
+                                    </button>
+
+                                    <!-- Download as PDF -->
+                                    <button onclick="downloadResume()"
+                                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors duration-150 group">
+                                        <i class="fa-solid fa-download mr-3 text-gray-400 group-hover:text-purple-600"></i>
+                                        Download PDF
+                                    </button>
+
+                                    <!-- Share Resume -->
+                                    <button onclick="shareResume()"
+                                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-150 group">
+                                        <i class="fa-solid fa-share-alt mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                                        Share Resume
+                                    </button>
+                                @else
+                                    <!-- Disabled actions when no resume -->
+                                    <div class="flex items-center px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
+                                        <i class="fa-solid fa-print mr-3"></i>
+                                        Print Resume
+                                    </div>
+                                    <div class="flex items-center px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
+                                        <i class="fa-solid fa-download mr-3"></i>
+                                        Download PDF
+                                    </div>
+                                    <div class="flex items-center px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
+                                        <i class="fa-solid fa-share-alt mr-3"></i>
+                                        Share Resume
+                                    </div>
+                                @endif
+                            @endauth
+
+                            <!-- Resume Statistics -->
+                            @auth
+                                @if ($hasResume)
+                                    <div class="border-t border-gray-100 mt-2 pt-2 px-4">
+                                        <div class="text-xs text-gray-500 mb-1">Resume Status</div>
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-green-600 font-medium">Complete</span>
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">100%</span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="border-t border-gray-100 mt-2 pt-2 px-4">
+                                        <div class="text-xs text-gray-500 mb-1">Resume Status</div>
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-yellow-600">Not Created</span>
+                                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">0%</span>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endauth
+                        </div>
+                    </div>
+
+                    @push('scripts')
+                        <script>
+                            function printResume() {
+                                // You can implement print functionality here
+                                // For now, redirect to print-friendly resume page
+                                @if (isset($user) && $user->resume)
+                                    window.open("{{ route('seeker.resumes.show', $user->resume->id) }}?print=true", '_blank');
+                                @else
+                                    alert('Please create a resume first.');
+                                @endif
+                            }
+
+                            function downloadResume() {
+                                // Implement PDF download functionality
+                                @if (isset($user) && $user->resume)
+                                    // This would typically call your backend to generate PDF
+                                    window.location.href = "{{ route('seeker.resumes.download', $user->resume->id) }}";
+                                @else
+                                    alert('Please create a resume first.');
+                                @endif
+                            }
+
+                            function shareResume() {
+                                // Implement share functionality
+                                @if (isset($user) && $user->resume)
+                                    if (navigator.share) {
+                                        navigator.share({
+                                                title: 'My Resume - {{ $user->name }}',
+                                                text: 'Check out my professional resume',
+                                                url: "{{ route('seeker.resumes.show', $user->resume->id) }}"
+                                            })
+                                            .then(() => console.log('Successful share'))
+                                            .catch((error) => console.log('Error sharing:', error));
+                                    } else {
+                                        // Fallback: copy to clipboard
+                                        const url = "{{ route('seeker.resumes.show', $user->resume->id) }}";
+                                        navigator.clipboard.writeText(url).then(() => {
+                                            alert('Resume link copied to clipboard!');
+                                        });
+                                    }
+                                @else
+                                    alert('Please create a resume first.');
+                                @endif
+                            }
+
+                            // Close dropdown when clicking outside
+                            document.addEventListener('click', function(event) {
+                                const dropdowns = document.querySelectorAll('[x-data]');
+                                dropdowns.forEach(dropdown => {
+                                    if (!dropdown.contains(event.target)) {
+                                        if (dropdown.__x && dropdown.__x.$data.resumeDropdown) {
+                                            dropdown.__x.$data.resumeDropdown = false;
+                                        }
+                                    }
+                                });
+                            });
+                        </script>
+                    @endpush
 
                     <!-- Mobile Filter Toggle (Hidden on desktop) -->
                     <button id="mobileNavFilterToggle"
-                            class="lg:hidden flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-all">
+                        class="lg:hidden flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-all">
                         <i class="fa-solid fa-sliders"></i>
                         <span class="text-sm font-medium">Filters</span>
                         <span class="bg-blue-100 text-blue-600 text-xs rounded-full px-2 py-1">
@@ -75,8 +247,9 @@
                 <!-- User Menu -->
                 <div class="relative" x-data="{ userMenuOpen: false }">
                     <button @click="userMenuOpen = !userMenuOpen"
-                            class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-sm">
+                        class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <div
+                            class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-sm">
                             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                         </div>
                         <div class="hidden lg:block text-left">
@@ -84,19 +257,16 @@
                             <div class="text-xs text-gray-500">Account</div>
                         </div>
                         <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform"
-                           :class="{ 'rotate-180': userMenuOpen }"></i>
+                            :class="{ 'rotate-180': userMenuOpen }"></i>
                     </button>
 
                     <!-- Dropdown Menu -->
-                    <div x-show="userMenuOpen"
-                         @click.away="userMenuOpen = false"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 overflow-hidden">
+                    <div x-show="userMenuOpen" @click.away="userMenuOpen = false"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 overflow-hidden">
 
                         <!-- User Info -->
                         <div class="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
@@ -107,17 +277,18 @@
                         <!-- Menu Items -->
                         <div class="py-2">
                             <a href="{{ route('jobs.createdJob') }}"
-                               class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
+                                class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
                                 <i class="fa-solid fa-briefcase w-4 text-gray-400 group-hover:text-blue-600"></i>
                                 <span>My Job Posts</span>
                             </a>
                             <a href="{{ route('jobs.index') }}"
-                               class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
-                                <i class="fa-solid fa-file-circle-check w-4 text-gray-400 group-hover:text-blue-600"></i>
+                                class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
+                                <i
+                                    class="fa-solid fa-file-circle-check w-4 text-gray-400 group-hover:text-blue-600"></i>
                                 <span>Applications</span>
                             </a>
                             <a href="{{ route('companies.index') }}"
-                               class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
+                                class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
                                 <i class="fa-solid fa-building w-4 text-gray-400 group-hover:text-blue-600"></i>
                                 <span>My Companies</span>
                             </a>
@@ -126,14 +297,14 @@
                         <!-- Settings -->
                         <div class="border-t border-gray-100 pt-2">
                             <a href="{{ route('profile.edit') }}"
-                               class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
+                                class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
                                 <i class="fa-solid fa-user-edit w-4 text-gray-400 group-hover:text-blue-600"></i>
                                 <span>Edit Profile</span>
                             </a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"
-                                        class="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-all group">
+                                    class="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-all group">
                                     <i class="fa-solid fa-right-from-bracket w-4"></i>
                                     <span>Sign Out</span>
                                 </button>
@@ -146,16 +317,17 @@
                 <div class="flex items-center space-x-1 lg:hidden">
                     <!-- Mobile Filter Toggle -->
                     <button id="mobileNavFilterToggle"
-                            class="flex items-center space-x-1 p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-all">
+                        class="flex items-center space-x-1 p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-all">
                         <i class="fa-solid fa-sliders"></i>
-                        <span class="bg-blue-100 text-blue-600 text-xs rounded-full w-5 h-5 flex items-center justify-center ml-1">
+                        <span
+                            class="bg-blue-100 text-blue-600 text-xs rounded-full w-5 h-5 flex items-center justify-center ml-1">
                             {{ $totalJobs ?? '0' }}
                         </span>
                     </button>
 
                     <!-- Mobile menu button -->
                     <button @click="mobileMenuOpen = !mobileMenuOpen"
-                            class="flex items-center justify-center w-10 h-10 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-all">
+                        class="flex items-center justify-center w-10 h-10 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-all">
                         <i class="fa-solid fa-bars" x-show="!mobileMenuOpen"></i>
                         <i class="fa-solid fa-xmark" x-show="mobileMenuOpen"></i>
                     </button>
@@ -164,29 +336,26 @@
         </div>
 
         <!-- Mobile Navigation Menu -->
-        <div x-show="mobileMenuOpen"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100"
-             x-transition:leave="transition ease-in duration-75"
-             x-transition:leave-start="opacity-100 scale-100"
-             x-transition:leave-end="opacity-0 scale-95"
-             class="lg:hidden border-t border-gray-200 bg-white py-3 space-y-1 shadow-lg">
+        <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="lg:hidden border-t border-gray-200 bg-white py-3 space-y-1 shadow-lg">
             <a href="{{ route('jobs.index') }}"
-               class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
-               @click="mobileMenuOpen = false">
+                class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
+                @click="mobileMenuOpen = false">
                 <i class="fa-solid fa-magnifying-glass w-5"></i>
                 <span class="font-medium">Browse Jobs</span>
             </a>
             <a href="{{ route('companies.index') }}"
-               class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
-               @click="mobileMenuOpen = false">
+                class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
+                @click="mobileMenuOpen = false">
                 <i class="fa-solid fa-building w-5"></i>
                 <span class="font-medium">Companies</span>
             </a>
             <a href="{{ route('categories.browse') }}"
-               class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
-               @click="mobileMenuOpen = false">
+                class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
+                @click="mobileMenuOpen = false">
                 <i class="fa-solid fa-tags w-5"></i>
                 <span class="font-medium">Categories</span>
             </a>
@@ -194,26 +363,26 @@
             <!-- Quick Actions -->
             <div class="border-t border-gray-200 pt-2">
                 <a href="{{ route('jobs.create') }}"
-                   class="flex items-center space-x-3 px-4 py-3 text-green-700 hover:bg-green-50 rounded-lg transition-all"
-                   @click="mobileMenuOpen = false">
+                    class="flex items-center space-x-3 px-4 py-3 text-green-700 hover:bg-green-50 rounded-lg transition-all"
+                    @click="mobileMenuOpen = false">
                     <i class="fa-solid fa-plus w-5"></i>
                     <span class="font-medium">Post a Job</span>
                 </a>
                 <a href="{{ route('resumes.edit', Auth::id()) }}"
-                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
-                   @click="mobileMenuOpen = false">
+                    class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
+                    @click="mobileMenuOpen = false">
                     <i class="fa-solid fa-file-lines w-5"></i>
                     <span class="font-medium">My Resume</span>
                 </a>
                 <a href="{{ route('jobs.createdJob') }}"
-                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
-                   @click="mobileMenuOpen = false">
+                    class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
+                    @click="mobileMenuOpen = false">
                     <i class="fa-solid fa-briefcase w-5"></i>
                     <span class="font-medium">My Job Posts</span>
                 </a>
                 <a href="{{ route('jobs.index') }}"
-                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
-                   @click="mobileMenuOpen = false">
+                    class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
+                    @click="mobileMenuOpen = false">
                     <i class="fa-solid fa-file-circle-check w-5"></i>
                     <span class="font-medium">Applied Jobs</span>
                 </a>
@@ -222,16 +391,16 @@
             <!-- User Section -->
             <div class="border-t border-gray-200 pt-2">
                 <a href="{{ route('profile.edit') }}"
-                   class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
-                   @click="mobileMenuOpen = false">
+                    class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
+                    @click="mobileMenuOpen = false">
                     <i class="fa-solid fa-user-edit w-5"></i>
                     <span class="font-medium">Edit Profile</span>
                 </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                            class="flex items-center space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all text-left"
-                            @click="mobileMenuOpen = false">
+                        class="flex items-center space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all text-left"
+                        @click="mobileMenuOpen = false">
                         <i class="fa-solid fa-right-from-bracket w-5"></i>
                         <span class="font-medium">Sign Out</span>
                     </button>
@@ -242,38 +411,39 @@
 </nav>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Mobile filter toggle functionality
-    const mobileFilterButtons = document.querySelectorAll('#mobileNavFilterToggle');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mobile filter toggle functionality
+        const mobileFilterButtons = document.querySelectorAll('#mobileNavFilterToggle');
 
-    mobileFilterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const sidebar = document.getElementById('sidebar');
-            const backdrop = document.getElementById('sidebarBackdrop');
+        mobileFilterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const sidebar = document.getElementById('sidebar');
+                const backdrop = document.getElementById('sidebarBackdrop');
 
-            if (sidebar && backdrop) {
-                // Open sidebar
-                sidebar.classList.remove('-translate-x-full');
-                backdrop.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
+                if (sidebar && backdrop) {
+                    // Open sidebar
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
 
-                // Close mobile menu if open
-                const mobileMenu = document.querySelector('[x-data]');
-                if (mobileMenu && mobileMenu.__x) {
-                    mobileMenu.__x.$data.mobileMenuOpen = false;
+                    // Close mobile menu if open
+                    const mobileMenu = document.querySelector('[x-data]');
+                    if (mobileMenu && mobileMenu.__x) {
+                        mobileMenu.__x.$data.mobileMenuOpen = false;
+                    }
                 }
-            }
+            });
         });
-    });
 
-    // Close mobile menu when clicking on filter items
-    document.querySelectorAll('#jobSearchForm input, #jobSearchForm select, #jobSearchForm button').forEach(element => {
-        element.addEventListener('click', function() {
-            const mobileMenu = document.querySelector('[x-data]');
-            if (mobileMenu && mobileMenu.__x && window.innerWidth < 1024) {
-                mobileMenu.__x.$data.mobileMenuOpen = false;
-            }
-        });
+        // Close mobile menu when clicking on filter items
+        document.querySelectorAll('#jobSearchForm input, #jobSearchForm select, #jobSearchForm button').forEach(
+            element => {
+                element.addEventListener('click', function() {
+                    const mobileMenu = document.querySelector('[x-data]');
+                    if (mobileMenu && mobileMenu.__x && window.innerWidth < 1024) {
+                        mobileMenu.__x.$data.mobileMenuOpen = false;
+                    }
+                });
+            });
     });
-});
 </script>

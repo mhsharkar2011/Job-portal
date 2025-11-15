@@ -13,6 +13,7 @@ use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResumeController;
 use App\Http\Controllers\SeekerController;
+use App\Models\Application;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
@@ -29,6 +30,7 @@ Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
 Route::get('browse', [JobController::class, 'browse'])->name('jobs.browse');
 
+
 // Public company routes
 Route::resource('companies', CompanyController::class);
 Route::get('/companies/{company}/jobs', [CompanyController::class, 'jobs'])->name('company.jobs');
@@ -43,11 +45,7 @@ Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->
 Route::group(['middleware' => ['auth']], function () {
 
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-
-    Route::get('auth/dashboard', [DashboardController::class, 'index'])->name('auth.dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -76,6 +74,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     // Application management
     Route::prefix('applications')->group(function () {
+        Route::resource('/', Application::class);
         Route::put('/{application}/status', [ApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
         Route::delete('/{application}', [ApplicationController::class, 'destroy'])->name('applications.destroy');
         Route::get('/my-applications', [ApplicationController::class, 'myApplications'])->name('applications.myApplications');
@@ -128,9 +127,29 @@ Route::group(['middleware' => ['auth']], function () {
     });
 
     // Seeker routes
-    Route::middleware(['role:job-seeker'])->group(function () {
-        Route::get('/seeker/dashboard', [SeekerController::class, 'dashboard'])->name('seeker.dashboard');
-        Route::post('/jobs/{job}/apply', [ApplicationController::class, 'store'])->name('jobs.apply');
+    Route::prefix('seeker')->name('seeker.')->middleware(['role:job-seeker'])->group(function () {
+        Route::get('/seeker/dashboard', [SeekerController::class, 'dashboard'])->name('dashboard');
+        Route::get('/jobs', [SeekerController::class, 'index'])->name('jobs.index');
+        Route::get('/jobs/apply', [SeekerController::class, 'create'])->name('apply');
+        Route::post('/jobs/{job}/apply', [SeekerController::class, 'store'])->name('application.save');
+        Route::get('/jobs/{job}', [SeekerController::class, 'show'])->name('application.show');
+        Route::get('/jobs/{job}/edit', [SeekerController::class, 'edit'])->name('application.edit');
+        Route::get('/jobs/{job}', [SeekerController::class, 'update'])->name('application.update');
+        Route::get('/applications', [SeekerController::class, 'applications'])->name('my-applications');
+
+
+        // Seeker Resume Route
+        Route::get('/resumes/create', [ResumeController::class, 'create'])->name('resumes.create');
+        Route::post('/resumes', [ResumeController::class, 'store'])->name('resumes.store');
+        Route::get('/resumes/{resume}', [ResumeController::class, 'show'])->name('resumes.show');
+        Route::get('/resumes/{resume}/edit', [ResumeController::class, 'edit'])->name('resumes.edit');
+        Route::put('/resumes', [ResumeController::class, 'update'])->name('resumes.update');
+        Route::delete('/resumes/{resume}', [ResumeController::class, 'destroy'])->name('resumes.destroy');
+        Route::get('/resumes/{resume}/download/', [ResumeController::class, 'download'])->name('resumes.download');
+
+        Route::get('/{resume}/download', [ResumeController::class, 'download'])->name('download');
+        Route::get('/{resume}/preview', [ResumeController::class, 'preview'])->name('preview');
+        Route::post('/{resume}/save-pdf', [ResumeController::class, 'savePdf'])->name('save-pdf');
     });
 });
 

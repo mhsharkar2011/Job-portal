@@ -103,11 +103,22 @@ class User extends Authenticatable
 
         $this->roles()->detach($role->id);
     }
-
-
+    
     public function resume()
     {
         return $this->hasOne(Resume::class);
+    }
+
+    // Add accessor for safe resume check
+    public function getHasResumeAttribute()
+    {
+        return $this->resume()->exists();
+    }
+
+    // Add accessor for safe resume ID
+    public function getResumeIdAttribute()
+    {
+        return $this->resume ? $this->resume->id : null;
     }
 
     protected static function boot()

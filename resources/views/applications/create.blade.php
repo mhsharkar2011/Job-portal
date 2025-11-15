@@ -47,7 +47,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('applications.store', $job) }}" method="POST" enctype="multipart/form-data"
+                    <form action="{{ route('applications.apply', $job) }}" method="POST" enctype="multipart/form-data"
                         id="applicationForm">
                         @csrf
 

@@ -11,7 +11,15 @@ class Resume extends Model
 
     protected $guarded = ['id'];
 
-    public function user()
+     protected $casts = [
+        'skills' => 'array',
+        'experience' => 'array',
+        'education' => 'array',
+        'is_active' => 'boolean',
+    ];
+
+
+      public function user()
     {
         return $this->belongsTo(User::class);
     }

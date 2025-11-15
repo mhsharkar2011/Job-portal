@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Company;
+use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -221,5 +222,10 @@ class CompanyController extends Controller
             ->paginate(12);
 
         return view('companies.my-companies', compact('companies'));
+    }
+
+    public function jobs(Job $job){
+        $jobs = Job::all();
+        return view('companies.jobs',compact('jobs'));
     }
 }

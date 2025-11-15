@@ -19,13 +19,13 @@
 
             @if (auth()->user()->isAdmin())
                 <!-- Admin Dashboard -->
-                @include('dashboard.admin')
+                @include('dashboards.admin')
             @elseif (auth()->user()->isEmployer())
                 <!-- Employer Dashboard -->
-                @include('dashboard.employer')
+                @include('dashboards.employer')
             @else
                 <!-- Job Seeker Dashboard -->
-                @include('dashboard.job-seeker')
+                @include('dashboards.job-seeker')
             @endif
         </div>
     </div>
