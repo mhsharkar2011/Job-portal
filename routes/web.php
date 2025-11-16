@@ -12,6 +12,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResumeController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SeekerController;
 use App\Models\Application;
 use Illuminate\Support\Facades\Route;
@@ -112,9 +113,19 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/applications/{application}', [AdminController::class, 'applicationsDestroy'])->name('applications.destroy');
 
         // Settings & Reports
-        Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
-        Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
-        Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+        Route::get('/settings', [RoleController::class, 'index'])->name('roles.index');
+        Route::get('/settings/create', [RoleController::class, 'create'])->name('roles.create');
+        Route::post('/settings', [RoleController::class, 'store'])->name('roles.store');
+        Route::get('/settings/{role}', [RoleController::class, 'show'])->name('roles.show');
+        Route::get('/settings/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
+        Route::put('/settings/{role}', [RoleController::class, 'update'])->name('roles.update');
+        Route::delete('/settings/{role}/destroy', [RoleController::class, 'destroy'])->name('roles.destroy');
+        Route::get('/reports', [RoleController::class, 'reports'])->name('roles.reports');
+
+        //Add user role assignment route
+        Route::get('/settings/users/assign-role', [RoleController::class, 'showAssignRoleForm'])->name('settings.users.show-assign-role');
+        Route::post('/users/assign-role', [RoleController::class, 'assignRoleToUser'])->name('users.assign-role');
+        Route::delete('/users/{user}/roles/{role}', [RoleController::class, 'removeRoleFromUser'])->name('users.remove-role');
 
         // Category Management
         Route::resource('categories', CategoryController::class);

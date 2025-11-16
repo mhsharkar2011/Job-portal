@@ -328,7 +328,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('admin.settings') }}"
+                <a href="{{ route('admin.roles.index') }}"
                    class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors duration-200">
                     <div class="flex-shrink-0">
                         <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">

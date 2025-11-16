@@ -292,6 +292,11 @@
                                 <i class="fa-solid fa-building w-4 text-gray-400 group-hover:text-blue-600"></i>
                                 <span>My Companies</span>
                             </a>
+                            <a href="{{ route('admin.settings.users.show-assign-role') }}"
+                                class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
+                                <i class="fa-solid fa-user-plus mr-3 text-gray-400 group-hover:text-gray-500"></i>
+                                Assign Roles
+                            </a>
                         </div>
 
                         <!-- Settings -->

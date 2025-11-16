@@ -68,7 +68,81 @@ class User extends Authenticatable
         return $this->roles()->where('slug', $roleSlug)->exists();
     }
 
+    // Check if user has any of the given roles
+    public function hasAnyRole($roles)
+    {
+        return $this->roles()->whereIn('slug', (array)$roles)->exists();
+    }
+    // Assign role to user
+    public function assignRole($role)
+    {
+        if (is_string($role)) {
+            $role = Role::where('slug', $role)->firstOrFail();
+        } elseif (is_int($role)) {
+            $role = Role::findOrFail($role);
+        }
 
+        if (!$role instanceof Role) {
+            throw new \InvalidArgumentException('Invalid role provided.');
+        }
+
+        $this->roles()->syncWithoutDetaching([$role->id]);
+
+        return $this;
+    }
+
+    // Remove role from user
+    public function removeRole($role)
+    {
+        if (is_string($role)) {
+            $role = Role::where('slug', $role)->firstOrFail();
+        } elseif (is_int($role)) {
+            $role = Role::findOrFail($role);
+        }
+
+        if (!$role instanceof Role) {
+            throw new \InvalidArgumentException('Invalid role provided.');
+        }
+
+        $this->roles()->detach($role->id);
+
+        return $this;
+    }
+
+    // Sync roles (replace all roles)
+    public function syncRoles($roles)
+    {
+        foreach ((array)$roles as $role) {
+            if (is_string($role)) {
+                // If it's a string, treat it as a slug and find the role
+                $role = Role::where('slug', $role)->firstOrFail();
+                $roleIds[] = $role->id;
+            } elseif ($role instanceof Role) {
+                // If it's a Role object, get its ID
+                $roleIds[] = $role->id;
+            } elseif (is_int($role)) {
+                // If it's an integer, treat it as a role ID
+                $roleIds[] = $role;
+            } else {
+                throw new \InvalidArgumentException('Invalid role provided. Must be string, integer, or Role instance.');
+            }
+        }
+
+        $this->roles()->sync($roleIds);
+
+        return $this;
+    }
+
+    // Check if user has permission through role
+    public function hasPermission($permission)
+    {
+        return $this->roles()->where(function ($query) use ($permission) {
+            $query->whereJsonContains('permissions', $permission)
+                ->orWhere('slug', 'admin'); // Admin has all permissions
+        })->exists();
+    }
+
+    // Helper methods for common roles
     public function isAdmin()
     {
         return $this->hasRole('admin');
@@ -84,26 +158,12 @@ class User extends Authenticatable
         return $this->hasRole('job-seeker');
     }
 
-    // Assign role to user
-    public function assignRole($role)
+    // Get primary role (first role assigned)
+    public function getPrimaryRoleAttribute()
     {
-        if (is_string($role)) {
-            $role = Role::where('slug', $role)->firstOrFail();
-        }
-
-        $this->roles()->syncWithoutDetaching([$role->id]);
+        return $this->roles->first();
     }
 
-    // Remove role from user
-    public function removeRole($role)
-    {
-        if (is_string($role)) {
-            $role = Role::where('slug', $role)->firstOrFail();
-        }
-
-        $this->roles()->detach($role->id);
-    }
-    
     public function resume()
     {
         return $this->hasOne(Resume::class);
