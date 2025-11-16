@@ -143,12 +143,12 @@ class RoleController extends Controller
                 $user->roles()->sync([$role->id]);
                 $action = 'replaced with';
 
-                \Log::info("Replaced all roles for user {$user->id} with role {$role->id}");
+                Log::info("Replaced all roles for user {$user->id} with role {$role->id}");
             } else {
                 $user->roles()->syncWithoutDetaching([$role->id]);
                 $action = 'added to';
 
-                \Log::info("Added role {$role->id} to user {$user->id}");
+                Log::info("Added role {$role->id} to user {$user->id}");
             }
 
             $message = "Role '{$role->name}' {$action} {$user->name}'s roles successfully!";
@@ -156,7 +156,7 @@ class RoleController extends Controller
             return redirect()->route('admin.settings.users.show-assign-role')
                 ->with('success', $message);
         } catch (\Exception $e) {
-            \Log::error("Role assignment failed for user {$validated['user_id']} with role {$validated['role_id']}: " . $e->getMessage());
+            Log::error("Role assignment failed for user {$validated['user_id']} with role {$validated['role_id']}: " . $e->getMessage());
 
             $errorMessage = 'Failed to assign role: ' . $e->getMessage();
 
