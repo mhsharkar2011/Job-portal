@@ -32,7 +32,7 @@
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-500">Employers</p>
                                 <p class="text-2xl font-semibold text-gray-900">
-                                    {{ $users->where('role', 'employer')->count() }}
+                                    {{ \App\Models\User::whereHas('roles', function ($q) {$q->where('name', 'employer');})->count() }}
                                 </p>
                             </div>
                         </div>
@@ -48,7 +48,7 @@
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-500">Job Seekers</p>
                                 <p class="text-2xl font-semibold text-gray-900">
-                                    {{ $users->where('role', 'job_seeker')->count() }}
+                                    {{ \App\Models\User::whereHas('roles', function ($q) {$q->where('name', 'job-seeker');})->count() }}
                                 </p>
                             </div>
                         </div>
@@ -58,13 +58,13 @@
                 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
                     <div class="p-6">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+                            <div class="flex-shrink-0 bg-red-500 rounded-md p-3">
                                 <i class="fas fa-user-shield text-white text-lg"></i>
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-500">Admins</p>
                                 <p class="text-2xl font-semibold text-gray-900">
-                                    {{ $users->where('role', 'admin')->count() }}
+                                    {{ \App\Models\User::whereHas('roles', function ($q) {$q->where('name', 'admin');})->count() }}
                                 </p>
                             </div>
                         </div>
@@ -92,12 +92,12 @@
                                 <select name="role" id="role"
                                     class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     <option value="">All Roles</option>
-                                    <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin
-                                    </option>
-                                    <option value="employer" {{ request('role') == 'employer' ? 'selected' : '' }}>
-                                        Employer</option>
-                                    <option value="job_seeker" {{ request('role') == 'job_seeker' ? 'selected' : '' }}>
-                                        Job Seeker</option>
+                                    @foreach ($availableRoles as $role)
+                                        <option value="{{ $role }}"
+                                            {{ request('role') == $role ? 'selected' : '' }}>
+                                            {{ ucfirst(str_replace('_', ' ', $role)) }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
 
@@ -153,7 +153,7 @@
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Role
+                                    Roles
                                 </th>
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -203,48 +203,76 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @php
-                                            $roleColors = [
-                                                'admin' => 'bg-purple-100 text-purple-800',
-                                                'employer' => 'bg-green-100 text-green-800',
-                                                'job_seeker' => 'bg-blue-100 text-blue-800',
-                                            ];
-                                            $colorClass = $roleColors[$user->role] ?? 'bg-gray-100 text-gray-800';
-                                        @endphp
-                                        <span
-                                            class="px-2 py-1 text-xs font-medium rounded-full {{ $colorClass }} capitalize">
-                                            {{ str_replace('_', ' ', $user->role) }}
-                                        </span>
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach ($user->roles as $role)
+                                                <span
+                                                    class="px-2 py-1 text-xs font-medium rounded-full capitalize
+                                                    @if ($role->name === 'admin') bg-red-100 text-red-800 border border-red-200
+                                                    @elseif($role->name === 'employer') bg-green-100 text-green-800 border border-green-200
+                                                    @elseif($role->name === 'job-seeker') bg-blue-100 text-blue-800 border border-blue-200
+                                                    @elseif($role->name === 'candidate') bg-purple-100 text-purple-800 border border-purple-200
+                                                    @elseif($role->name === 'moderator') bg-yellow-100 text-yellow-800 border border-yellow-200
+                                                    @elseif($role->name === 'recruiter') bg-indigo-100 text-indigo-800 border border-indigo-200
+                                                    @else bg-red-100 text-gray-800 border border-gray-200 @endif">
+                                                    {{ str_replace('-', ' ', $role->name) }}
+                                                </span>
+                                            @endforeach
+                                            @if ($user->roles->isEmpty())
+                                                <span class="text-xs text-gray-500">No roles</span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <div class="space-y-1">
-                                            @if ($user->role === 'employer')
+                                            @if ($user->hasRole('employer'))
                                                 <div class="flex items-center">
-                                                    <i class="fas fa-briefcase text-gray-400 mr-2 text-xs"></i>
+                                                    <i class="fas fa-briefcase text-green-500 mr-2 text-xs"></i>
                                                     <span>{{ $user->jobs_count }} jobs posted</span>
                                                 </div>
-                                            @elseif($user->role === 'job_seeker')
+                                            @endif
+                                            @if ($user->hasRole('job-seeker') || $user->hasRole('candidate'))
                                                 <div class="flex items-center">
-                                                    <i class="fas fa-file-alt text-gray-400 mr-2 text-xs"></i>
+                                                    <i class="fas fa-file-alt text-blue-500 mr-2 text-xs"></i>
                                                     <span>{{ $user->applications_count }} applications</span>
                                                 </div>
-                                            @else
-                                                <div class="text-gray-400 text-xs">System Administrator</div>
+                                            @endif
+                                            @if ($user->hasRole('admin'))
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-cog text-red-500 mr-2 text-xs"></i>
+                                                    <span>System Administrator</span>
+                                                </div>
+                                            @endif
+                                            @if ($user->hasRole('moderator'))
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-shield-alt text-orange-500 mr-2 text-xs"></i>
+                                                    <span>Content Moderator</span>
+                                                </div>
                                             @endif
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if ($user->is_active)
                                             <span
-                                                class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                                class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 border border-green-200">
                                                 Active
                                             </span>
                                         @else
                                             <span
-                                                class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                                class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 border border-red-200">
                                                 Inactive
                                             </span>
                                         @endif
+                                        <div class="mt-1">
+                                            @if ($user->email_verified_at)
+                                                <span class="text-xs text-green-600 flex items-center">
+                                                    <i class="fas fa-check-circle mr-1"></i> Verified
+                                                </span>
+                                            @else
+                                                <span class="text-xs text-yellow-600 flex items-center">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i> Unverified
+                                                </span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <div class="flex flex-col">
@@ -256,12 +284,12 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div class="flex justify-end space-x-2">
                                             <a href="{{ route('admin.users.show', $user) }}"
-                                                class="text-blue-600 hover:text-blue-900 transition duration-150"
+                                                class="text-blue-600 hover:text-blue-900 transition duration-150 p-2 rounded hover:bg-blue-50"
                                                 title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="{{ route('admin.users.edit', $user) }}"
-                                                class="text-green-600 hover:text-green-900 transition duration-150"
+                                                class="text-green-600 hover:text-green-900 transition duration-150 p-2 rounded hover:bg-green-50"
                                                 title="Edit User">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -272,13 +300,13 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
-                                                        class="text-red-600 hover:text-red-900 transition duration-150"
+                                                        class="text-red-600 hover:text-red-900 transition duration-150 p-2 rounded hover:bg-red-50"
                                                         title="Delete User">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
                                             @else
-                                                <span class="text-gray-400 cursor-not-allowed"
+                                                <span class="text-gray-400 cursor-not-allowed p-2"
                                                     title="Cannot delete your own account">
                                                     <i class="fas fa-trash"></i>
                                                 </span>

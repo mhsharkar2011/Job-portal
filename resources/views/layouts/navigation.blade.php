@@ -250,10 +250,10 @@
                         class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         <div
                             class="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-sm">
-                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            {{ strtoupper(substr(Auth::user()?->name, 0, 1)) }}
                         </div>
                         <div class="hidden lg:block text-left">
-                            <div class="text-sm font-medium text-gray-900">{{ Auth::user()->name }}</div>
+                            <div class="text-sm font-medium text-gray-900">{{ Auth::user()?->name }}</div>
                             <div class="text-xs text-gray-500">Account</div>
                         </div>
                         <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform"
@@ -270,8 +270,8 @@
 
                         <!-- User Info -->
                         <div class="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
-                            <p class="text-sm font-semibold text-gray-900">{{ Auth::user()->name }}</p>
-                            <p class="text-sm text-gray-600 truncate">{{ Auth::user()->email }}</p>
+                            <p class="text-sm font-semibold text-gray-900">{{ Auth::user()?->name }}</p>
+                            <p class="text-sm text-gray-600 truncate">{{ Auth::user()?->email }}</p>
                         </div>
 
                         <!-- Menu Items -->
@@ -373,7 +373,7 @@
                     <i class="fa-solid fa-plus w-5"></i>
                     <span class="font-medium">Post a Job</span>
                 </a>
-                <a href="{{ route('resumes.edit', Auth::id()) }}"
+                <a href="{{ route('resumes.edit', Auth::id() ?? '0') }}"
                     class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all"
                     @click="mobileMenuOpen = false">
                     <i class="fa-solid fa-file-lines w-5"></i>

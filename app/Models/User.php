@@ -57,7 +57,11 @@ class User extends Authenticatable
         return $this->profile_photo_path;
     }
 
-    // Add this relationship if using roles
+    public function company()
+    {
+        return $this->hasOne(Company::class, 'user_id');
+    }
+
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'role_user');

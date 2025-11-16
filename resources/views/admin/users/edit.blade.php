@@ -206,27 +206,20 @@
                                     <h4 class="text-md font-medium text-gray-900 mb-4">Account Settings</h4>
                                     <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                                         <!-- Role -->
-                                        <div class="sm:col-span-3">
-                                            <label for="role" class="block text-sm font-medium text-gray-700">
-                                                User Role *
-                                            </label>
-                                            <div class="mt-1">
-                                                <select name="role" id="role" required
-                                                    class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md @error('role') border-red-300 @enderror">
-                                                    <option value="">Select Role</option>
-                                                    <option value="admin"
-                                                        {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>
-                                                        Administrator</option>
-                                                    <option value="employer"
-                                                        {{ old('role', $user->role) == 'employer' ? 'selected' : '' }}>
-                                                        Employer</option>
-                                                    <option value="job_seeker"
-                                                        {{ old('role', $user->role) == 'job_seeker' ? 'selected' : '' }}>
-                                                        Job Seeker</option>
-                                                </select>
-                                                @error('role')
-                                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                                @enderror
+                                        <!-- Roles -->
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Roles</label>
+                                            <div class="space-y-2">
+                                                @foreach ($roles as $role)
+                                                    <label class="flex items-center">
+                                                        <input type="checkbox" name="roles[]"
+                                                            value="{{ $role->id }}"
+                                                            {{ $user->roles->contains($role->id) ? 'checked' : '' }}
+                                                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                                        <span
+                                                            class="ml-2 text-sm text-gray-700">{{ $role->name }}</span>
+                                                    </label>
+                                                @endforeach
                                             </div>
                                         </div>
 

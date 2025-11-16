@@ -88,9 +88,11 @@ class AdminController extends Controller
             });
         }
 
-        // Role filter
-        if ($request->has('role') && $request->role) {
-            $query->where('role', $request->role);
+        // Role filter - using role relationship
+        if ($request->filled('role')) {
+            $query->whereHas('roles', function ($q) use ($request) {
+                $q->where('name', $request->role);
+            });
         }
 
         // Status filter
@@ -102,11 +104,16 @@ class AdminController extends Controller
             }
         }
 
-        $users = $query->withCount(['jobs', 'applications'])
+        $users = $query->with(['roles'])
+            ->withCount(['jobs', 'applications'])
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('admin.users.index', compact('users'));
+        // Get available roles for filter dropdown
+        $availableRoles = Role::pluck('name', 'name');
+
+        return view('admin.users.index', compact('users', 'availableRoles'));
     }
 
     public function create()
@@ -234,65 +241,63 @@ class AdminController extends Controller
 
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        $roles = Role::all();
+        return view('admin.users.edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, User $user)
     {
+        // Validate the request
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'role' => 'required|in:admin,employer,job_seeker',
-            'is_active' => 'boolean',
-            'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'remove_photo' => 'boolean',
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'remove_photo' => 'nullable|boolean',
+            'roles' => 'required|array',
+            'roles.*' => 'exists:roles,id',
+            'is_active' => 'required|boolean',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Handle photo removal first
-            if ($request->has('remove_photo') && $request->remove_photo) {
-                if ($user->profile_photo_path) {
-                    Storage::disk('public')->delete($user->profile_photo_path);
-                }
-                $user->profile_photo_path = null;
-            }
-            // Handle profile photo upload
-            elseif ($request->hasFile('profile_photo')) {
-                $file = $request->file('profile_photo');
-
+            // Handle profile photo
+            if ($request->hasFile('profile_photo')) {
                 // Delete old photo if exists
                 if ($user->profile_photo_path) {
-                    Storage::disk('public')->delete($user->profile_photo_path);
+                    Storage::delete($user->profile_photo_path);
                 }
 
-                // Generate proper filename
-                $extension = $file->getClientOriginalExtension();
-                $filename = 'user-' . $user->id . '-' . time() . '.' . $extension;
-
-                // Store with proper filename
-                $path = $file->storeAs('profile-photos', $filename, 'public');
-                $user->profile_photo_path = $path;
+                // Store new photo
+                $path = $request->file('profile_photo')->store('profile-photos', 'public');
+                $validated['profile_photo_path'] = $path;
             }
 
-            // Update user data
+            // Handle photo removal
+            if ($request->boolean('remove_photo') && $user->profile_photo_path) {
+                Storage::delete($user->profile_photo_path);
+                $validated['profile_photo_path'] = null;
+            }
+
+            // Update user basic information
             $user->update([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'address' => $validated['address'],
-                'role' => $validated['role'],
-                'is_active' => $validated['is_active'] ?? false,
-                'profile_photo_path' => $user->profile_photo_path, // This will be updated if photo was changed
+                'profile_photo_path' => $validated['profile_photo_path'] ?? $user->profile_photo_path,
+                'is_active' => $validated['is_active'],
             ]);
+
+            // Sync roles
+            $user->roles()->sync($request->roles);
 
             DB::commit();
 
             return redirect()->route('admin.users.show', $user)
-                ->with('success', 'User updated successfully.');
+                ->with('success', 'User updated successfully!');
         } catch (\Exception $e) {
             DB::rollBack();
 

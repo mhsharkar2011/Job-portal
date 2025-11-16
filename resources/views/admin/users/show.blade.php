@@ -77,21 +77,29 @@
                                             <dd class="mt-1 text-sm text-gray-900">{{ $user->email }}</dd>
                                         </div>
                                         <div>
-                                            <dt class="text-sm font-medium text-gray-500">Role</dt>
+                                            <dt class="text-sm font-medium text-gray-500">Roles</dt>
                                             <dd class="mt-1">
-                                                @php
-                                                    $roleColors = [
-                                                        'admin' => 'bg-purple-100 text-purple-800',
-                                                        'employer' => 'bg-green-100 text-green-800',
-                                                        'job_seeker' => 'bg-blue-100 text-blue-800',
-                                                    ];
-                                                    $colorClass =
-                                                        $roleColors[$user->role] ?? 'bg-gray-100 text-gray-800';
-                                                @endphp
-                                                <span
-                                                    class="px-2 py-1 text-xs font-medium rounded-full {{ $colorClass }} capitalize">
-                                                    {{ str_replace('_', ' ', $user->role) }}
-                                                </span>
+                                                <div class="flex flex-wrap gap-1">
+                                                    @foreach ($user->roles as $role)
+                                                        @php
+                                                            $roleColors = [
+                                                                'admin' => 'bg-purple-100 text-purple-800',
+                                                                'employer' => 'bg-green-100 text-green-800',
+                                                                'job-seeker' => 'bg-blue-100 text-blue-800',
+                                                                'candidate' => 'bg-blue-100 text-blue-800',
+                                                                'user' => 'bg-gray-100 text-gray-800',
+                                                            ];
+                                                            $colorClass = $roleColors[$role->name] ?? 'bg-gray-100 text-gray-800';
+                                                        @endphp
+                                                        <span
+                                                            class="px-2 py-1 text-xs font-medium rounded-full {{ $colorClass }} capitalize">
+                                                            {{ str_replace('_', ' ', $role->name) }}
+                                                        </span>
+                                                    @endforeach
+                                                    @if($user->roles->isEmpty())
+                                                        <span class="text-sm text-gray-500">No roles assigned</span>
+                                                    @endif
+                                                </div>
                                             </dd>
                                         </div>
                                         <div>
@@ -159,7 +167,7 @@
                     </div>
 
                     <!-- Role-Specific Content -->
-                    @if ($user->role === 'employer')
+                    @if ($user->hasRole('employer'))
                         <!-- Employer's Jobs -->
                         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
                             <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
@@ -168,7 +176,7 @@
                                 </h3>
                             </div>
                             <div class="px-4 py-5 sm:p-6">
-                                @if ($user->jobs && $user->jobs->count() > 0)
+                                @if ($user->jobs_count > 0)
                                     <div class="space-y-4">
                                         @foreach ($user->jobs as $job)
                                             <div
@@ -176,9 +184,14 @@
                                                 <div class="flex justify-between items-start">
                                                     <div class="flex-1">
                                                         <h4 class="text-lg font-medium text-gray-900">
-                                                            {{ $job->job_title }}</h4>
-                                                        <p class="text-sm text-gray-600 mt-1">{{ $job->company_name }}
-                                                            • {{ $job->location }}</p>
+                                                            <a href="{{ route('jobs.show', $job) }}"
+                                                               class="hover:text-blue-600 transition duration-150">
+                                                                {{ $job->job_title }}
+                                                            </a>
+                                                        </h4>
+                                                        <p class="text-sm text-gray-600 mt-1">
+                                                            {{ $job->company->name ?? $job->company_name }} • {{ $job->location }}
+                                                        </p>
                                                         <div
                                                             class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
                                                             <span class="flex items-center">
@@ -187,7 +200,7 @@
                                                             </span>
                                                             <span class="flex items-center">
                                                                 <i class="fas fa-users mr-1"></i>
-                                                                {{ $job->applications_count }} applications
+                                                                {{ $job->applications_count ?? 0 }} applications
                                                             </span>
                                                             <span class="flex items-center">
                                                                 <i class="fas fa-clock mr-1"></i>
@@ -220,7 +233,9 @@
                                 @endif
                             </div>
                         </div>
-                    @elseif($user->role === 'job_seeker')
+                    @endif
+
+                    @if ($user->hasRole('job-seeker') || $user->hasRole('candidate'))
                         <!-- Job Seeker's Applications -->
                         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
                             <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
@@ -229,7 +244,7 @@
                                 </h3>
                             </div>
                             <div class="px-4 py-5 sm:p-6">
-                                @if ($user->applications && $user->applications->count() > 0)
+                                @if ($user->applications_count > 0)
                                     <div class="space-y-4">
                                         @foreach ($user->applications as $application)
                                             <div
@@ -237,10 +252,15 @@
                                                 <div class="flex justify-between items-start">
                                                     <div class="flex-1">
                                                         <h4 class="text-lg font-medium text-gray-900">
-                                                            {{ $application->job->job_title }}</h4>
+                                                            <a href="{{ route('jobs.show', $application->job) }}"
+                                                               class="hover:text-blue-600 transition duration-150">
+                                                                {{ $application->job->job_title }}
+                                                            </a>
+                                                        </h4>
                                                         <p class="text-sm text-gray-600 mt-1">
-                                                            {{ $application->job->company_name }} •
-                                                            {{ $application->job->location }}</p>
+                                                            {{ $application->job->company->name ?? $application->job->company_name }} •
+                                                            {{ $application->job->location }}
+                                                        </p>
                                                         <div
                                                             class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
                                                             <span class="flex items-center">
@@ -264,9 +284,7 @@
                                                                 'accepted' => 'bg-green-100 text-green-800',
                                                                 'rejected' => 'bg-red-100 text-red-800',
                                                             ];
-                                                            $statusClass =
-                                                                $statusColors[$application->status] ??
-                                                                'bg-gray-100 text-gray-800';
+                                                            $statusClass = $statusColors[$application->status] ?? 'bg-gray-100 text-gray-800';
                                                         @endphp
                                                         <span
                                                             class="px-2 py-1 text-xs font-medium rounded-full {{ $statusClass }} capitalize">
@@ -359,6 +377,30 @@
                                             <p class="text-sm font-medium text-gray-900">Last Login</p>
                                             <p class="text-sm text-gray-500">
                                                 {{ $user->last_login_at->diffForHumans() }}</p>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($user->jobs_count > 0)
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 bg-orange-100 rounded-full p-2">
+                                            <i class="fas fa-briefcase text-orange-600 text-sm"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Jobs Posted</p>
+                                            <p class="text-sm text-gray-500">{{ $user->jobs_count }} jobs</p>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($user->applications_count > 0)
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 bg-indigo-100 rounded-full p-2">
+                                            <i class="fas fa-file-alt text-indigo-600 text-sm"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Applications Submitted</p>
+                                            <p class="text-sm text-gray-500">{{ $user->applications_count }} applications</p>
                                         </div>
                                     </div>
                                 @endif
