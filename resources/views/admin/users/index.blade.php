@@ -32,7 +32,7 @@
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-500">Employers</p>
                                 <p class="text-2xl font-semibold text-gray-900">
-                                    {{ \App\Models\User::whereHas('roles', function ($q) {$q->where('name', 'employer');})->count() }}
+                                    {{ \App\Models\User::whereHas('roles', function ($q) {$q->where('slug', 'employer');})->count() }}
                                 </p>
                             </div>
                         </div>
@@ -48,7 +48,7 @@
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-500">Job Seekers</p>
                                 <p class="text-2xl font-semibold text-gray-900">
-                                    {{ \App\Models\User::whereHas('roles', function ($q) {$q->where('name', 'job-seeker');})->count() }}
+                                    {{ \App\Models\User::whereHas('roles', function ($q) {$q->where('slug', 'job-seeker');})->count() }}
                                 </p>
                             </div>
                         </div>
@@ -64,7 +64,7 @@
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-500">Admins</p>
                                 <p class="text-2xl font-semibold text-gray-900">
-                                    {{ \App\Models\User::whereHas('roles', function ($q) {$q->where('name', 'admin');})->count() }}
+                                    {{ \App\Models\User::whereHas('roles', function ($q) {$q->where('slug', 'admin');})->count() }}
                                 </p>
                             </div>
                         </div>

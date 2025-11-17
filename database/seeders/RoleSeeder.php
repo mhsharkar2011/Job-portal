@@ -11,26 +11,37 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             [
+                'name' => 'Super Admin',
+                'slug' => 'super-admin',
+                'description' => 'Has full system access',
+                'is_default' => false,
+                'is_active' => true,
+                'permissions' => ['*']
+            ],
+            [
                 'name' => 'Admin',
                 'slug' => 'admin',
-                'description' => 'Administrator with full access'
+                'description' => 'Administrative access',
+                'is_default' => false,
+                'is_active' => true,
+                'permissions' => ['users.read', 'users.create', 'users.update']
             ],
             [
-                'name' => 'Employer',
-                'slug' => 'employer',
-                'description' => 'Can post and manage jobs'
-            ],
-            [
-                'name' => 'Job Seeker',
-                'slug' => 'job-seeker',
-                'description' => 'Can apply for jobs'
-            ],
+                'name' => 'User',
+                'slug' => 'user',
+                'description' => 'Regular user',
+                'is_default' => true,
+                'is_active' => true,
+                'permissions' => ['profile.read', 'profile.update']
+            ]
         ];
 
         foreach ($roles as $role) {
             Role::updateOrCreate(
                 ['slug' => $role['slug']],
-                $role
+                array_merge($role, [
+                    'updated_at' => now() // Always update the timestamp
+                ])
             );
         }
 

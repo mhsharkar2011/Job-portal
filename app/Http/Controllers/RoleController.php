@@ -132,37 +132,28 @@ class RoleController extends Controller
             'role_id' => 'required|exists:roles,id',
             'assignment_type' => 'required|in:assign,replace'
         ]);
-
         try {
             $user = User::findOrFail($validated['user_id']);
             $role = Role::findOrFail($validated['role_id']);
             $assignmentType = $validated['assignment_type'];
-
             // Use direct Eloquent for reliability
             if ($assignmentType === 'replace') {
                 $user->roles()->sync([$role->id]);
                 $action = 'replaced with';
-
                 Log::info("Replaced all roles for user {$user->id} with role {$role->id}");
             } else {
                 $user->roles()->syncWithoutDetaching([$role->id]);
                 $action = 'added to';
-
                 Log::info("Added role {$role->id} to user {$user->id}");
             }
-
             $message = "Role '{$role->name}' {$action} {$user->name}'s roles successfully!";
-
-            return redirect()->route('admin.settings.users.show-assign-role')
-                ->with('success', $message);
+            return redirect()->route('admin.settings.users.show-assign-role')->with('success', $message);
         } catch (\Exception $e) {
             Log::error("Role assignment failed for user {$validated['user_id']} with role {$validated['role_id']}: " . $e->getMessage());
 
             $errorMessage = 'Failed to assign role: ' . $e->getMessage();
 
-            return redirect()->route('admin.settings.users.show-assign-role')
-                ->with('error', $errorMessage)
-                ->withInput();
+            return redirect()->route('admin.settings.users.show-assign-role')->with('error', $errorMessage)->withInput();
         }
     }
 
