@@ -35,7 +35,7 @@ class JobController extends Controller
             ->latest()
             ->paginate(12);
 
-        return view('jobs.index', compact('jobs'));
+        return view('admin.jobs.index', compact('jobs'));
     }
 
     /**
@@ -45,7 +45,7 @@ class JobController extends Controller
     {
         $categories = Category::active()->ordered()->get();
         $companies = Company::where('user_id', auth()->id())->get();
-        return view('jobs.post-job', compact('categories', 'companies'));
+        return view('admin.jobs.create', compact('categories', 'companies'));
     }
 
     /**
@@ -107,7 +107,7 @@ class JobController extends Controller
                     'is_active' => true,
                 ]);
 
-                return redirect()->route('jobs.createdJob')
+                return redirect()->route('admin.jobs.index')
                     ->with('success', 'Job posted successfully! It will be live after review.');
             });
         } catch (\Exception $e) {

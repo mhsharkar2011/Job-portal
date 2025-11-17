@@ -54,7 +54,7 @@ class AdminJobController extends Controller
     {
         $categories = Category::active()->ordered()->get();
         $companies = Company::where('user_id', auth()->id())->get();
-        return view('jobs.post-job', compact('categories', 'companies'));
+        return view('admin.jobs.create', compact('categories', 'companies'));
     }
 
     /**

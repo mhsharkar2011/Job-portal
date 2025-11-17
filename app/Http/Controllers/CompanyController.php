@@ -23,7 +23,7 @@ class CompanyController extends Controller
             ->latest()
             ->paginate(12);
 
-        return view('companies.index', compact('companies','totalCompanies'));
+        return view('companies.index', compact('companies', 'totalCompanies'));
     }
 
     /**
@@ -32,8 +32,7 @@ class CompanyController extends Controller
     public function create()
     {
         $categories = Category::active()->ordered()->get();
-
-        return view('companies.create',compact('categories'));
+        return view('companies.create', compact('categories'));
     }
 
     /**
@@ -41,28 +40,8 @@ class CompanyController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:companies,name',
-            'email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'website' => 'nullable|url|max:255',
-            'about' => 'nullable|string|min:50|max:1000',
-            'industry' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'address' => 'nullable|string|max:500',
-            'city' => 'nullable|string|max:255',
-            'state' => 'nullable|string|max:255',
-            'country' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:20',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'employees_count' => 'nullable|integer|min:1',
-            'founded_year' => 'nullable|integer|min:1900|max:' . date('Y'),
-            'facebook_url' => 'nullable|url|max:255',
-            'twitter_url' => 'nullable|url|max:255',
-            'linkedin_url' => 'nullable|url|max:255',
-            'instagram_url' => 'nullable|url|max:255',
-        ]);
+
+        $validated = $request->all();
 
         try {
             // Handle logo upload
@@ -75,15 +54,14 @@ class CompanyController extends Controller
                 $validated['banner'] = $request->file('banner')->store('companies/banners', 'public');
             }
 
-            // Set user ID
+            // Set user ID and active status
             $validated['user_id'] = Auth::id();
             $validated['is_active'] = true;
 
             $company = Company::create($validated);
 
-            return redirect()->route('companies.show', $company)
+            return redirect()->route('admin.company.show', $company)
                 ->with('success', 'Company created successfully!');
-
         } catch (\Exception $e) {
             Log::error('Company creation error: ' . $e->getMessage());
             return back()->with('error', 'Failed to create company. Please try again.')->withInput();
@@ -107,14 +85,14 @@ class CompanyController extends Controller
      */
     public function edit(Company $company)
     {
-        // Authorization check - user must own the company
-        if ($company->user_id !== 1) {
+        // FIXED: Use Auth::id() instead of hardcoded 1
+        if ($company->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 
         $categories = Category::active()->ordered()->get();
 
-        return view('companies.edit', compact('company','categories'));
+        return view('companies.edit', compact('company', 'categories'));
     }
 
     /**
@@ -128,12 +106,12 @@ class CompanyController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:companies,name,' . $company->id,
+            'category_id' => 'required|exists:categories,id', // FIXED: Added category_id
+            'name' => 'required|string|max:255|unique:companies,name,' . $company->id . ',id,user_id,' . Auth::id(), // FIXED: Unique per user
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
             'website' => 'nullable|url|max:255',
             'about' => 'nullable|string|min:50|max:1000',
-            'industry' => 'required|string|max:255',
             'location' => 'required|string|max:255',
             'address' => 'nullable|string|max:500',
             'city' => 'nullable|string|max:255',
@@ -174,7 +152,6 @@ class CompanyController extends Controller
 
             return redirect()->route('companies.show', $company)
                 ->with('success', 'Company updated successfully!');
-
         } catch (\Exception $e) {
             Log::error('Company update error: ' . $e->getMessage());
             return back()->with('error', 'Failed to update company. Please try again.')->withInput();
@@ -204,7 +181,6 @@ class CompanyController extends Controller
 
             return redirect()->route('companies.index')
                 ->with('success', 'Company deleted successfully!');
-
         } catch (\Exception $e) {
             Log::error('Company deletion error: ' . $e->getMessage());
             return back()->with('error', 'Failed to delete company. Please try again.');
@@ -224,8 +200,9 @@ class CompanyController extends Controller
         return view('companies.my-companies', compact('companies'));
     }
 
-    public function jobs(Job $job){
+    public function jobs(Job $job)
+    {
         $jobs = Job::all();
-        return view('companies.jobs',compact('jobs'));
+        return view('companies.jobs', compact('jobs'));
     }
 }

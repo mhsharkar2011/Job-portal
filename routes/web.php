@@ -129,6 +129,13 @@ Route::group(['middleware' => ['auth']], function () {
 
         // Category Management
         Route::resource('categories', CategoryController::class);
+        // Company Management
+        // Route::resource('companies', CompanyController::class);
+        Route::get('/companies', [CompanyController::class,'index'])->name('company.index');
+        Route::get('/companies/create', [CompanyController::class,'create'])->name('company.create');
+        Route::post('/companies', [CompanyController::class,'store'])->name('company.store');
+        Route::get('/companies/{company}', [CompanyController::class,'show'])->name('company.show');
+        Route::get('/companies/{company}/jobs', [CompanyController::class, 'jobs'])->name('company.jobs');
     });
 
     // Employer routes

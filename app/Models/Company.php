@@ -18,12 +18,12 @@ class Company extends Model
      */
     protected $fillable = [
         'user_id',
+        'category_id',
         'name',
         'email',
         'phone',
         'website',
         'about',
-        'industry',
         'location',
         'address',
         'city',
@@ -32,7 +32,7 @@ class Company extends Model
         'postal_code',
         'logo',
         'banner',
-        'employees_count',
+        'employees_range',
         'founded_year',
         'facebook_url',
         'twitter_url',
@@ -49,7 +49,7 @@ class Company extends Model
      */
     protected $casts = [
         'founded_year' => 'integer',
-        'employees_count' => 'integer',
+        'employees_range' => 'integer',
         'is_verified' => 'boolean',
         'is_active' => 'boolean',
     ];
@@ -67,11 +67,11 @@ class Company extends Model
         return $this->belongsTo(Category::class);
     }
 
-    // If you keep the industry field but want to sync with categories
-    public function getIndustryCategoryAttribute()
-    {
-        return Category::where('name', $this->industry)->first();
-    }
+    // // If you keep the industry field but want to sync with categories
+    // public function getIndustryCategoryAttribute()
+    // {
+    //     return Category::where('name', $this->industry)->first();
+    // }
 
     /**
      * Get the jobs for the company.

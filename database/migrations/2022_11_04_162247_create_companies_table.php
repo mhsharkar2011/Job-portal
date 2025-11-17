@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('website')->nullable();
             $table->text('about')->nullable();
-            // $table->string('industry')->nullable();
             $table->string('location')->nullable();
             $table->string('address')->nullable();
             $table->string('city')->nullable();
@@ -29,7 +28,7 @@ return new class extends Migration
             $table->string('postal_code')->nullable();
             $table->string('logo')->nullable();
             $table->string('banner')->nullable();
-            $table->integer('employees_count')->nullable();
+            $table->integer('employees_range')->nullable();
             $table->integer('founded_year')->nullable();
             $table->string('facebook_url')->nullable();
             $table->string('twitter_url')->nullable();
