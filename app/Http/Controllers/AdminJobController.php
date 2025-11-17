@@ -138,7 +138,7 @@ class AdminJobController extends Controller
     public function show(Job $job)
     {
         // Load the job with necessary relationships
-        $job->load(['company', 'category', 'user', 'applications.user']);
+        $job->load(['company', 'category', 'user', 'applications']);
 
         // Load applications count
         $job->loadCount('applications');
@@ -177,108 +177,137 @@ class AdminJobController extends Controller
     /**
      * Update the specified resource in storage.
      */
-   public function update(Request $request, Job $job)
-{
-    // Allow admin to edit any job, restrict others to their own jobs
-    if (!auth()->user()->isAdmin() && $job->user_id !== auth()->id()) {
-        abort(403, 'Unauthorized action.');
-    }
-
-    // Updated validation rules to match your new field names
-    $rules = [
-        'company_id' => 'required|exists:companies,id',
-        'category_id' => 'required|exists:categories,id',
-        'title' => 'required|string|max:255',
-        'description' => 'required|string|min:50',
-        'requirements' => 'required|string|min:50',
-        'location' => 'required|string|max:255',
-        'experience_min' => 'required|integer|min:0',
-        'experience_max' => 'required|integer|min:0|gte:experience_min',
-        'experience_unit' => 'required|in:years,months',
-        'role' => 'required|string|max:255',
-        'employment_type' => 'required|in:full-time,part-time,contract,freelance,internship',
-        'salary_min' => 'required|integer|min:0',
-        'salary_max' => 'required|integer|min:0|gte:salary_min',
-        'salary_currency' => 'required|in:USD,BDT,EUR,GBP',
-        'key_skills' => 'required|string|min:3',
-        'positions_available' => 'required|integer|min:1|max:100',
-        'apply_by_date' => 'nullable|date|after:today',
-        'status' => 'sometimes|in:draft,active,pending,expired,closed',
-        'published_at' => 'nullable|date|after_or_equal:today',
-        'expires_at' => 'nullable|date|after:published_at',
-        'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ];
-
-    // Custom validation messages
-    $messages = [
-        'experience_max.gte' => 'Maximum experience must be greater than or equal to minimum experience',
-        'salary_max.gte' => 'Maximum salary must be greater than or equal to minimum salary',
-        'apply_by_date.after' => 'Application deadline must be a future date',
-        'published_at.after_or_equal' => 'Publish date must be today or in the future',
-        'expires_at.after' => 'Expiry date must be after publish date',
-    ];
-
-    $validated = $request->validate($rules, $messages);
-
-    try {
-        return DB::transaction(function () use ($validated, $request, $job) {
-            // FIXED: Better authorization logic
-            if (auth()->user()->isAdmin()) {
-                // Admin can update any job with any company - no restrictions
-            } else {
-                // Regular user must own both the job AND the company
-                if ($job->user_id !== auth()->id()) {
-                    throw new \Exception('You are not authorized to update this job.');
-                }
-
-                $company = Company::findOrFail($validated['company_id']);
-                if ($company->user_id !== auth()->id()) {
-                    throw new \Exception('You are not authorized to use this company.');
-                }
-            }
-
-            // Handle file upload
-            if ($request->hasFile('logo')) {
-                // Delete old logo if exists
-                if ($job->logo) {
-                    Storage::disk('public')->delete($job->logo);
-                }
-                $validated['logo'] = $request->file('logo')->store('company-logos', 'public');
-            } else {
-                // Keep existing logo if no new file uploaded
-                unset($validated['logo']);
-            }
-
-            // Handle status and publish date logic
-            if (isset($validated['status'])) {
-                $status = $validated['status'];
-                $publishedAt = $validated['published_at'] ?? null;
-
-                // Auto-set published_at based on status
-                if ($status === 'active' && !$publishedAt) {
-                    $validated['published_at'] = now();
-                } elseif ($status === 'draft') {
-                    $validated['published_at'] = null;
-                }
-            }
-
-            // Update job with the validated data
-            $job->update($validated);
-
-            return redirect()->route('admin.jobs.show', $job)
-                ->with('success', 'Job updated successfully!');
-        });
-    } catch (\Exception $e) {
-        Log::error('Job update error: ' . $e->getMessage());
-
-        $errorMessage = $e->getMessage();
-        if (str_contains($errorMessage, 'Unauthorized') || str_contains($errorMessage, 'authorized')) {
-            return back()->with('error', $errorMessage)->withInput();
+    public function update(Request $request, Job $job)
+    {
+        // Allow admin to edit any job, restrict others to their own jobs
+        if (!auth()->user()->isAdmin() && $job->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
         }
 
-        return back()->with('error', 'Failed to update job. Please try again.')->withInput();
+        // If it's just a status update (from the activate/deactivate buttons)
+        if ($request->has('status')) {
+            try {
+                $status = $request->status;
+
+                // Update job status and related fields
+                $updateData = ['status' => $status];
+
+                // Set is_active based on status
+                $updateData['is_active'] = $status === 'active';
+
+                // Set published_at if activating
+                if ($status === 'active' && !$job->published_at) {
+                    $updateData['published_at'] = now();
+                }
+
+                // Set accepting_applications based on status
+                $updateData['accepting_applications'] = in_array($status, ['active', 'pending']);
+
+                $job->update($updateData);
+
+                return redirect()->route('admin.jobs.show', $job)
+                    ->with('success', 'Job status updated successfully!');
+            } catch (\Exception $e) {
+                Log::error('Job status update error: ' . $e->getMessage());
+                return back()->with('error', 'Failed to update job status. Please try again.');
+            }
+        }
+
+        // Full update with validation (your existing code for editing the entire job)
+        $rules = [
+            'company_id' => 'required|exists:companies,id',
+            'category_id' => 'required|exists:categories,id',
+            'job_title' => 'required|string|max:255',
+            'job_description' => 'required|string|min:50',
+            'requirement' => 'required|string|min:50',
+            'location' => 'required|string|max:255',
+            'experience_minimum' => 'required|integer|min:0',
+            'experience_maximum' => 'required|integer|min:0|gte:experience_minimum',
+            'experience_unit' => 'required|in:years,months',
+            'role' => 'required|string|max:255',
+            'employment_type' => 'required|in:full-time,part-time,contract,freelance,internship',
+            'salary_minimum' => 'required|integer|min:0',
+            'salary_maximum' => 'required|integer|min:0|gte:salary_minimum',
+            'salary_currency' => 'required|in:USD,BDT,EUR,GBP',
+            'key_skills' => 'required|string|min:3',
+            'positions_available' => 'required|integer|min:1|max:100',
+            'application_deadline' => 'nullable|date|after:today',
+            'status' => 'sometimes|in:draft,active,pending,expired,closed',
+            'published_at' => 'nullable|date|after_or_equal:today',
+            'expires_at' => 'nullable|date|after:published_at',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ];
+
+        // Custom validation messages
+        $messages = [
+            'experience_maximum.gte' => 'Maximum experience must be greater than or equal to minimum experience',
+            'salary_maximum.gte' => 'Maximum salary must be greater than or equal to minimum salary',
+            'application_deadline.after' => 'Application deadline must be a future date',
+            'published_at.after_or_equal' => 'Publish date must be today or in the future',
+            'expires_at.after' => 'Expiry date must be after publish date',
+        ];
+
+        $validated = $request->validate($rules, $messages);
+
+        try {
+            return DB::transaction(function () use ($validated, $request, $job) {
+                // Authorization logic
+                if (auth()->user()->isAdmin()) {
+                    // Admin can update any job with any company - no restrictions
+                } else {
+                    // Regular user must own both the job AND the company
+                    if ($job->user_id !== auth()->id()) {
+                        throw new \Exception('You are not authorized to update this job.');
+                    }
+
+                    $company = Company::findOrFail($validated['company_id']);
+                    if ($company->user_id !== auth()->id()) {
+                        throw new \Exception('You are not authorized to use this company.');
+                    }
+                }
+
+                // Handle file upload
+                if ($request->hasFile('logo')) {
+                    // Delete old logo if exists
+                    if ($job->logo) {
+                        Storage::disk('public')->delete($job->logo);
+                    }
+                    $validated['logo'] = $request->file('logo')->store('company-logos', 'public');
+                } else {
+                    // Keep existing logo if no new file uploaded
+                    unset($validated['logo']);
+                }
+
+                // Handle status and publish date logic
+                if (isset($validated['status'])) {
+                    $status = $validated['status'];
+                    $publishedAt = $validated['published_at'] ?? null;
+
+                    // Auto-set published_at based on status
+                    if ($status === 'active' && !$publishedAt) {
+                        $validated['published_at'] = now();
+                    } elseif ($status === 'draft') {
+                        $validated['published_at'] = null;
+                    }
+                }
+
+                // Update job with the validated data
+                $job->update($validated);
+
+                return redirect()->route('admin.jobs.show', $job)
+                    ->with('success', 'Job updated successfully!');
+            });
+        } catch (\Exception $e) {
+            Log::error('Job update error: ' . $e->getMessage());
+
+            $errorMessage = $e->getMessage();
+            if (str_contains($errorMessage, 'Unauthorized') || str_contains($errorMessage, 'authorized')) {
+                return back()->with('error', $errorMessage)->withInput();
+            }
+
+            return back()->with('error', 'Failed to update job. Please try again.')->withInput();
+        }
     }
-}
 
     /**
      * Display jobs listing for job seekers to apply

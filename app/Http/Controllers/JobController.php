@@ -251,7 +251,7 @@ class JobController extends Controller
         $categories = Category::all();
         $companies = Company::where('user_id', auth()->id())->get();
 
-        return view('jobs.edit', compact('job', 'categories', 'companies'));
+        return view('admin.jobs.edit', compact('job', 'categories', 'companies'));
     }
     /**
      * Update the specified resource in storage.

@@ -5,7 +5,7 @@
             <div class="md:flex md:items-center md:justify-between mb-8">
                 <div class="flex-1 min-w-0">
                     <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                        {{ $job->title }}
+                        {{ $job->job_title }}
                     </h2>
                     <p class="mt-1 text-sm text-gray-500">
                         Job Details & Applications
@@ -56,7 +56,7 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Salary Range</dt>
                                     <dd class="mt-1 text-sm text-gray-900">
-                                        {{ $job->salary_currency }} {{ number_format($job->salary_min) }} - {{ number_format($job->salary_max) }}
+                                        {{ $job->salary_currency }} {{ number_format($job->salary_minimum) }} - {{ number_format($job->salary_maximum) }}
                                     </dd>
                                 </div>
                                 <div>
@@ -66,14 +66,22 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Experience Required</dt>
                                     <dd class="mt-1 text-sm text-gray-900">
-                                        {{ $job->experience_min }} - {{ $job->experience_max }} {{ $job->experience_unit }}
+                                        {{ $job->experience_minimum }} - {{ $job->experience_maximum }} {{ $job->experience_unit }}
                                     </dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Application Deadline</dt>
                                     <dd class="mt-1 text-sm text-gray-900">
-                                        {{ $job->apply_by_date ? $job->apply_by_date->format('M d, Y') : 'No deadline' }}
+                                        {{ $job->application_deadline ? $job->application_deadline->format('M d, Y') : 'No deadline' }}
                                     </dd>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <dt class="text-sm font-medium text-gray-500">Key Skills</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ $job->key_skills }}</dd>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <dt class="text-sm font-medium text-gray-500">Role</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ $job->role }}</dd>
                                 </div>
                             </dl>
                         </div>
@@ -88,7 +96,7 @@
                         </div>
                         <div class="px-4 py-5 sm:p-6">
                             <div class="prose max-w-none">
-                                <p class="text-sm text-gray-900 whitespace-pre-line">{{ $job->description }}</p>
+                                <p class="text-sm text-gray-900 whitespace-pre-line">{{ $job->job_description }}</p>
                             </div>
                         </div>
                     </div>
@@ -102,7 +110,7 @@
                         </div>
                         <div class="px-4 py-5 sm:p-6">
                             <div class="prose max-w-none">
-                                <p class="text-sm text-gray-900 whitespace-pre-line">{{ $job->requirements }}</p>
+                                <p class="text-sm text-gray-900 whitespace-pre-line">{{ $job->requirement }}</p>
                             </div>
                         </div>
                     </div>
@@ -124,15 +132,16 @@
                                     @elseif($job->status === 'draft') bg-gray-100 text-gray-800
                                     @elseif($job->status === 'pending') bg-yellow-100 text-yellow-800
                                     @elseif($job->status === 'expired') bg-red-100 text-red-800
+                                    @elseif($job->status === 'closed') bg-red-100 text-red-800
                                     @else bg-gray-100 text-gray-800 @endif">
                                     {{ ucfirst($job->status) }}
                                 </span>
                             </div>
 
                             <div class="space-y-3">
-                                <form action="{{ route('admin.jobs.update', $job) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.jobs.update', $job) }}" method="POST" enctype="multipart/form-data" class="inline">
                                     @csrf
-                                    @method('PATCH')
+                                    @method('PUT')
                                     <input type="hidden" name="status" value="active">
                                     <button type="submit"
                                             class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
@@ -192,7 +201,7 @@
                                 </div>
                             </dl>
                             <div class="mt-4 text-center">
-                                <a href="{{ route('admin.applications.index', $job) }}"
+                                <a href="{{ route('admin.applications.index', ['job' => $job->id]) }}"
                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                     <i class="fa-solid fa-list mr-2"></i>
                                     View All Applications
@@ -232,6 +241,26 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Expires On</dt>
                                     <dd class="mt-1 text-sm text-gray-900">{{ $job->expires_at->format('M d, Y') }}</dd>
+                                </div>
+                                @endif
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Accepting Applications</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ $job->accepting_applications ? 'Yes' : 'No' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Active</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ $job->is_active ? 'Yes' : 'No' }}</dd>
+                                </div>
+                                @if($job->is_featured)
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Featured</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">Yes {{ $job->featured_until ? '(until ' . $job->featured_until->format('M d, Y') . ')' : '' }}</dd>
+                                </div>
+                                @endif
+                                @if($job->is_urgent)
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500">Urgent</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">Yes</dd>
                                 </div>
                                 @endif
                             </dl>

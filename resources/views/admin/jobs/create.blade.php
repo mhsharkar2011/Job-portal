@@ -52,37 +52,25 @@
                             </div>
                         </div>
 
-                        <!-- Industry -->
-                        <div>
-                            <label for="industry" class="block text-sm font-medium text-gray-700 mb-2">Industry Type
-                                *</label>
-                            <select id="industry" name="category_id"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('industry') border-red-500 @enderror"
+                        <!-- Category -->
+                        <div class="mb-6">
+                            <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                Category <span class="text-red-500">*</span>
+                            </label>
+                            <select  name="category_id"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('category_id') border-red-500 @enderror"
                                 required>
-                                <option value="">Select Industry</option>
+                                <option value="">Select Category</option>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}"
-                                        {{ old('industry', $category->id ?? '') == $category->id ? 'selected' : '' }}>
+                                        {{ old('category_id') == $category->id ? 'selected' : '' }}>
                                         {{ $category->name }}
                                     </option>
                                 @endforeach
-                                <!-- Keep "Other" option for custom industries -->
-                                <option value="Other"
-                                    {{ old('industry', $company->industry ?? '') == 'Other' ? 'selected' : '' }}>Other
-                                </option>
                             </select>
-                            @error('industry')
+                            @error('category_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
-
-                            <!-- Show custom industry input if "Other" is selected -->
-                            <div id="custom_industry_container" class="mt-4 hidden">
-                                <label for="custom_industry" class="block text-sm font-medium text-gray-700 mb-2">Custom
-                                    Industry</label>
-                                <input type="text" id="custom_industry" name="custom_industry"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Enter your industry">
-                            </div>
                         </div>
 
                         <!-- Job Title -->
@@ -219,9 +207,6 @@
                             </div>
                         </div>
 
-
-
-
                         <!-- Salary Range -->
                         <div class="mb-6">
                             <label class="block mb-4 text-sm font-medium text-gray-700">
@@ -346,19 +331,6 @@
                             @enderror
                         </div>
 
-                        {{-- <!-- Logo Upload -->
-                        <div class="mb-8">
-                            <label for="logo" class="block mb-2 text-sm font-medium text-gray-700">
-                                Company Logo (Optional)
-                            </label>
-                            <input type="file" name="logo" id="logo" accept="image/*"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                            <p class="text-sm text-gray-500 mt-1">Recommended: Square image, PNG or JPG, max 2MB</p>
-                            @error('logo')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div> --}}
-
                         <!-- Form Actions -->
                         <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
                             <button type="submit"
@@ -377,18 +349,9 @@
         </div>
     </div>
 </x-app-layout>
-
+{{--
 @push('scripts')
     <script>
-        console.log('Current URL:', window.location.href);
-        console.log('URL Search Params:', new URLSearchParams(window.location.search));
-
-        // Check if category_id is in URL
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('category_id')) {
-            console.log('Category ID found in URL:', urlParams.get('category_id'));
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
             // Set minimum date for application deadline to today
             const deadlineInput = document.getElementById('application_deadline');
@@ -437,4 +400,4 @@
             }
         });
     </script>
-@endpush
+@endpush --}}
