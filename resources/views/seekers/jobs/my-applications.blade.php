@@ -213,7 +213,7 @@
                                         <td class="px-6 py-4">
                                             <div class="flex flex-col space-y-2 items-center">
                                                 <!-- View Job Button -->
-                                                <a href="{{ route('jobs.show', $application->job->id) }}"
+                                                <a href="{{ route('seeker.application.show', $application->job->id) }}"
                                                     class="w-full flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-medium"
                                                     title="View Job Details">
                                                     <i class="fa-solid fa-eye mr-2"></i>

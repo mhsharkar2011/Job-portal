@@ -55,7 +55,7 @@ class CompanySeeder extends Seeder
 
         $companies = [
             [
-                'user_id' => $user->id,
+                'user_id' => 3,
                 'category_id' => $softwareCategory->id,
                 'name' => 'TechCorp Solutions',
                 'email' => 'careers@techcorp.com',

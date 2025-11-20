@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('job_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            // $table->string('full_name');
-            // $table->string('email');
-            // $table->string('phone')->nullable();
+            $table->string('full_name');
+            $table->string('email');
+            $table->string('phone')->nullable();
             $table->integer('experience_years')->nullable();
-            // $table->text('address')->nullable();
+            $table->text('address')->nullable();
             $table->text('skills')->nullable();
             $table->text('education')->nullable();
             $table->string('resume_path');

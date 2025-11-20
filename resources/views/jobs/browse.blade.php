@@ -200,10 +200,10 @@
                                             </span>
                                         @endif
                                     </div>
-                                    <a href="{{ route('jobs.show', $featuredJob) }}"
+                                    {{-- <a href="{{ route('seeker.jobs.show', $featuredJob) }}"
                                         class="w-full bg-white text-blue-600 hover:bg-blue-50 py-2 px-4 rounded-lg font-semibold text-sm text-center block transition-colors">
                                         View Job
-                                    </a>
+                                    </a> --}}
                                 </div>
                             @endforeach
                         </div>

@@ -8,7 +8,7 @@
         <div class="flex justify-between items-start mb-4">
             <!-- Status Badges -->
             <div class="flex items-center gap-2">
-                @if($job->is_featured && $job->isCurrentlyFeatured)
+                @if($job->is_featured)
                 <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                     <i class="fa-solid fa-star text-yellow-500"></i>
                     Featured
@@ -21,14 +21,14 @@
                 </span>
                 @endif
                 <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-medium">
-                    Active
+                    {{ $job->is_active ? 'Active' : 'Inactive' }}
                 </span>
             </div>
 
             <!-- Applicants Count -->
             <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1">
                 <i class="fa-solid fa-users"></i>
-                {{ $job->applications_count }} applicants
+                {{ $job->applications_count ?? 0 }} applicants
             </span>
         </div>
 
@@ -100,7 +100,7 @@
                 <div>
                     <div class="text-xs text-gray-500">Salary</div>
                     <div class="font-medium text-gray-900">
-                        ${{ number_format($job->salary_minimum) }} - ${{ number_format($job->salary_maximum) }}
+                        {{ $job->salary_currency }} {{ number_format($job->salary_minimum) }} - {{ number_format($job->salary_maximum) }}
                     </div>
                 </div>
             </div>
@@ -160,7 +160,7 @@
             <!-- Apply Button -->
             <div class="flex-1">
                 @auth
-                    @if(auth()->user()->role === 'job_seeker')
+                    @if(auth()->user()->isSeeker())
                         <!-- Check if user already applied -->
                         @if($job->applications->where('user_id', auth()->id())->count() > 0)
                             <button class="apply-button flex items-center gap-2 px-6 py-3 bg-green-100 text-green-700 rounded-xl font-semibold text-sm cursor-not-allowed w-full justify-center transition-colors" disabled>
@@ -168,14 +168,14 @@
                                 Applied
                             </button>
                         @else
-                            <button onclick="quickApply({{ $job->id }})"
-                                    class="apply-button flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold text-sm w-full justify-center transition-all shadow-sm hover:shadow-md">
+                            <a href="{{ route('seeker.jobs.apply', $job->id) }}"
+                               class="apply-button flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold text-sm w-full justify-center transition-all shadow-sm hover:shadow-md">
                                 <i class="fa-solid fa-paper-plane"></i>
                                 Quick Apply
-                            </button>
+                            </a>
                         @endif
                     @else
-                        <a href="{{ route('jobs.show', $job) }}"
+                        <a href="{{ route('seeker.jobs.show', $job) }}"
                            class="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold text-sm w-full justify-center transition-colors">
                             <i class="fa-solid fa-eye"></i>
                             View Details

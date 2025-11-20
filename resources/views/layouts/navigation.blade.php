@@ -300,8 +300,8 @@
                             @endphp
 
                             <!-- Job Seeker Menus -->
-                            @if ($isSeeker || $isAdmin)
-                                <a href="{{ route('jobs.index') }}"
+                            @if ($isSeeker)
+                                <a href="{{ route('seeker.jobs.browse') }}"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-search mr-3 w-4 text-center"></i>
                                     Browse Jobs
@@ -347,6 +347,13 @@
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-plus mr-3 w-4 text-center"></i>
                                     Post a Job
+                                </a>
+                            @endif
+                            @if ($isAdmin)
+                                <a href="{{ route('admin.jobs.index') }}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-search mr-3 w-4 text-center"></i>
+                                    Browse Jobs
                                 </a>
                             @endif
                         @endauth

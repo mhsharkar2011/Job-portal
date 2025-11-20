@@ -123,11 +123,11 @@ class JobController extends Controller
     }
 
     // Created Job for UI
-    public function created()
-    {
-        $jobs = Job::with('company')->get();
-        return view('jobs.created-job', compact('jobs'));
-    }
+    // public function created()
+    // {
+    //     $jobs = Job::with('company')->get();
+    //     return view('jobs.created-job', compact('jobs'));
+    // }
 
     /**
      * Display the specified resource.

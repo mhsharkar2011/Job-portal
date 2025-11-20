@@ -158,11 +158,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::prefix('seeker')->name('seeker.')->middleware(['role:job-seeker'])->group(function () {
         Route::get('/seeker/dashboard', [SeekerController::class, 'dashboard'])->name('dashboard');
         Route::get('/jobs', [SeekerController::class, 'index'])->name('jobs.index');
-        Route::get('/jobs/apply', [SeekerController::class, 'create'])->name('jobs.apply');
+        Route::get('/jobs/browse', [JobController::class, 'browse'])->name('jobs.browse');
+        Route::get('/jobs/{job}', [SeekerController::class, 'show'])->name('jobs.show');
+        Route::get('/jobs/{job}/apply', [SeekerController::class, 'create'])->name('jobs.apply');
         Route::post('/jobs/{job}/apply', [SeekerController::class, 'store'])->name('application.save');
         Route::get('/jobs/{job}', [SeekerController::class, 'show'])->name('application.show');
         Route::get('/jobs/{job}/edit', [SeekerController::class, 'edit'])->name('application.edit');
-        Route::get('/jobs/{job}', [SeekerController::class, 'update'])->name('application.update');
+        Route::put('/jobs/{job}', [SeekerController::class, 'update'])->name('application.update');
         Route::get('/applications', [SeekerController::class, 'applications'])->name('my-applications');
 
 
