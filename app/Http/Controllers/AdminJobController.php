@@ -116,7 +116,7 @@ class AdminJobController extends Controller
                     'is_active' => true,
                 ]);
 
-                return redirect()->route('jobs.createdJob')
+                return redirect()->route('admin.jobs.index')
                     ->with('success', 'Job posted successfully! It will be live after review.');
             });
         } catch (\Exception $e) {

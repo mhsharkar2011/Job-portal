@@ -66,7 +66,7 @@ class AdminController extends Controller
             ->groupBy('month')
             ->get();
 
-        return view('dashboard.admin', compact(
+        return view('dashboards.admin', compact(
             'stats',
             'recentUsers',
             'recentJobs',

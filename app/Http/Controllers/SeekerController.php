@@ -68,4 +68,14 @@ class SeekerController extends Controller
     {
         //
     }
+
+    public function applications(){
+
+         $applications = Application::with(['job', 'job.company'])
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->paginate(10);
+
+        return view('seekers.jobs.my-applications',compact('applications'));
+    }
 }

@@ -35,7 +35,7 @@ class JobController extends Controller
             ->latest()
             ->paginate(12);
 
-        return view('admin.jobs.index', compact('jobs'));
+        return view('jobs.index', compact('jobs'));
     }
 
     /**

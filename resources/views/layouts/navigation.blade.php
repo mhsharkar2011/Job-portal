@@ -45,9 +45,9 @@
                     <!-- Post Job Button -->
 
                     <div class="hidden lg:flex items-center space-x-1">
-                        <a href="{{ route('admin.jobs.index') }}"
+                        <a href="{{ route('jobs.browse') }}"
                             class="px-4 py-2 text-sm font-medium rounded-lg transition-all
-                              {{ request()->is('admin/jobs*') || (request()->is('admin/jobs') && !request()->is('admin/jobs/*/edit') && !request()->is('jobs/create')) ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                              {{ request()->is('jobs/browse') || (request()->is('admin/jobs') && !request()->is('admin/jobs/*/edit') && !request()->is('jobs/create')) ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                             <i class="fa-solid fa-magnifying-glass mr-2"></i>
                             Browse Jobs
                         </a>
@@ -245,6 +245,8 @@
                 </div>
 
                 <!-- User Menu -->
+                <!-- User Menu -->
+                <!-- User Menu -->
                 <div class="relative" x-data="{ userMenuOpen: false }">
                     <button @click="userMenuOpen = !userMenuOpen"
                         class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -254,7 +256,11 @@
                         </div>
                         <div class="hidden lg:block text-left">
                             <div class="text-sm font-medium text-gray-900">{{ Auth::user()?->name }}</div>
-                            <div class="text-xs text-gray-500">Account</div>
+                            <div class="text-xs text-gray-500 capitalize">
+                                @auth
+                                    {{ Auth::user()->primary_role->name ?? 'User' }}
+                                @endauth
+                            </div>
                         </div>
                         <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform"
                             :class="{ 'rotate-180': userMenuOpen }"></i>
@@ -272,46 +278,87 @@
                         <div class="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
                             <p class="text-sm font-semibold text-gray-900">{{ Auth::user()?->name }}</p>
                             <p class="text-sm text-gray-600 truncate">{{ Auth::user()?->email }}</p>
+                            <p class="text-xs text-gray-500 capitalize mt-1">
+                                {{ Auth::user()->primary_role->name ?? 'User' }}
+                            </p>
                         </div>
 
-                        <!-- Menu Items -->
-                        <div class="py-2">
-                            <a href="{{ route('jobs.createdJob') }}"
-                                class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
-                                <i class="fa-solid fa-briefcase w-4 text-gray-400 group-hover:text-blue-600"></i>
-                                <span>My Job Posts</span>
-                            </a>
-                            <a href="{{ route('jobs.index') }}"
-                                class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
-                                <i
-                                    class="fa-solid fa-file-circle-check w-4 text-gray-400 group-hover:text-blue-600"></i>
-                                <span>Applications</span>
-                            </a>
-                            <a href="{{ route('companies.index') }}"
-                                class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
-                                <i class="fa-solid fa-building w-4 text-gray-400 group-hover:text-blue-600"></i>
-                                <span>My Companies</span>
-                            </a>
-                            <a href="{{ route('admin.settings.users.show-assign-role') }}"
-                                class="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900">
-                                <i class="fa-solid fa-user-plus mr-3 text-gray-400 group-hover:text-gray-500"></i>
-                                Assign Roles
-                            </a>
-                        </div>
+                        <!-- Common menus for all users -->
+                        <a href="{{ route('profile.edit') }}"
+                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-user mr-3 w-4 text-center"></i>
+                            Profile
+                        </a>
 
-                        <!-- Settings -->
-                        <div class="border-t border-gray-100 pt-2">
-                            <a href="{{ route('profile.edit') }}"
-                                class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-all group">
-                                <i class="fa-solid fa-user-edit w-4 text-gray-400 group-hover:text-blue-600"></i>
-                                <span>Edit Profile</span>
-                            </a>
+                        <!-- Dynamic menus based on user role -->
+                        @auth
+                            @php
+                                $user = Auth::user();
+                                $isSeeker = $user->isSeeker();
+                                $isEmployer = $user->isEmployer();
+                                $isAdmin = $user->isAdmin();
+                            @endphp
+
+                            <!-- Job Seeker Menus -->
+                            @if ($isSeeker || $isAdmin)
+                                <a href="{{ route('jobs.index') }}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-search mr-3 w-4 text-center"></i>
+                                    Browse Jobs
+                                </a>
+                            @endif
+
+                            @if ($isSeeker)
+                                <a href="{{ route('seeker.my-applications') }}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-file-alt mr-3 w-4 text-center"></i>
+                                    My Applications
+                                </a>
+                            @endif
+
+                            <!-- Employer Menus -->
+                            @if ($isEmployer)
+                                <a href="{{ route('employer.jobs.create') }}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-plus mr-3 w-4 text-center"></i>
+                                    Post a Job
+                                </a>
+                            @endif
+
+                            @if ($isEmployer)
+                                <a href="{{ route('employer.jobs') }}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-briefcase mr-3 w-4 text-center"></i>
+                                    My Job Posts
+                                </a>
+                            @endif
+
+                            <!-- Admin Menus -->
+                            @if ($isAdmin)
+                                <a href="{{ route('admin.dashboard') }}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-cog mr-3 w-4 text-center"></i>
+                                    Admin Dashboard
+                                </a>
+                            @endif
+
+                            @if ($isAdmin)
+                                <a href="{{ route('admin.jobs.create') }}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                    <i class="fas fa-plus mr-3 w-4 text-center"></i>
+                                    Post a Job
+                                </a>
+                            @endif
+                        @endauth
+
+                        <!-- Logout -->
+                        <div class="border-t border-gray-100 mt-2 pt-2">
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit"
-                                    class="flex items-center space-x-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-all group">
-                                    <i class="fa-solid fa-right-from-bracket w-4"></i>
-                                    <span>Sign Out</span>
+                                    class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                    <i class="fas fa-sign-out-alt mr-3 w-4 text-center"></i>
+                                    Logout
                                 </button>
                             </form>
                         </div>

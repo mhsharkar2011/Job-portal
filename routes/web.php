@@ -27,9 +27,9 @@ Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'storeRegister'])->name('storeRegister');
 
 // Public job routes
-Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+Route::get('seekers/jobs', [SeekerController::class, 'index'])->name('jobs.index');
 Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show');
-Route::get('browse', [JobController::class, 'browse'])->name('jobs.browse');
+Route::get('seekers/jobs/browse', [JobController::class, 'browse'])->name('jobs.browse');
 
 
 // Public company routes
@@ -111,6 +111,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/applications/{application}', [AdminController::class, 'applicationShow'])->name('applications.show');
         Route::put('/applications/{application}/status', [AdminController::class, 'applicationUpdateStatus'])->name('applications.update-status');
         Route::delete('/applications/{application}', [AdminController::class, 'applicationsDestroy'])->name('applications.destroy');
+        Route::get('/applications/{application}/download-application', [AdminController::class, 'applicationDownload'])->name('applications.download');
 
         // Settings & Reports
         Route::get('/settings', [RoleController::class, 'index'])->name('roles.index');
@@ -142,13 +143,22 @@ Route::group(['middleware' => ['auth']], function () {
     Route::middleware(['role:employer'])->group(function () {
         Route::get('/employer/dashboard', [EmployerController::class, 'dashboard'])->name('employer.dashboard');
         Route::get('/my-companies', [CompanyController::class, 'myCompanies'])->name('companies.my');
+
+        // Job Management
+        Route::get('/jobs', [AdminJobController::class, 'index'])->name('jobs.index');
+        Route::get('/jobs/create', [AdminJobController::class, 'create'])->name('jobs.create');
+        Route::post('/jobs', [AdminJobController::class, 'store'])->name('jobs.store');
+        Route::get('/jobs/{job}', [AdminJobController::class, 'show'])->name('jobs.show');
+        Route::get('/jobs/{job}/edit', [AdminJobController::class, 'edit'])->name('jobs.edit');
+        Route::put('/jobs/{job}', [AdminJobController::class, 'update'])->name('jobs.update');
+        Route::delete('/jobs/{job}', [AdminJobController::class, 'destroy'])->name('jobs.destroy');
     });
 
     // Seeker routes
     Route::prefix('seeker')->name('seeker.')->middleware(['role:job-seeker'])->group(function () {
         Route::get('/seeker/dashboard', [SeekerController::class, 'dashboard'])->name('dashboard');
         Route::get('/jobs', [SeekerController::class, 'index'])->name('jobs.index');
-        Route::get('/jobs/apply', [SeekerController::class, 'create'])->name('apply');
+        Route::get('/jobs/apply', [SeekerController::class, 'create'])->name('jobs.apply');
         Route::post('/jobs/{job}/apply', [SeekerController::class, 'store'])->name('application.save');
         Route::get('/jobs/{job}', [SeekerController::class, 'show'])->name('application.show');
         Route::get('/jobs/{job}/edit', [SeekerController::class, 'edit'])->name('application.edit');

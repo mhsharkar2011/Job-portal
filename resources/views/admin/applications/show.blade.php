@@ -56,16 +56,16 @@
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Full Name</dt>
                                     <dd class="mt-1 text-sm text-gray-900">
-                                        {{ $application->full_name ?? 'Not provided' }}</dd>
+                                        {{ $application->user->name ?? 'Not provided' }}</dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Email</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ $application->email ?? 'Not provided' }}
+                                    <dd class="mt-1 text-sm text-gray-900">{{ $application->user->email ?? 'Not provided' }}
                                     </dd>
                                 </div>
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500">Phone</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ $application->phone ?? 'Not provided' }}
+                                    <dd class="mt-1 text-sm text-gray-900">{{ $application->user->phone ?? 'Not provided' }}
                                     </dd>
                                 </div>
                                 <div>
@@ -75,7 +75,7 @@
                                 </div>
                                 <div class="sm:col-span-2">
                                     <dt class="text-sm font-medium text-gray-500">Address</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ $application->address ?? 'Not provided' }}
+                                    <dd class="mt-1 text-sm text-gray-900">{{ $application->user->address ?? 'Not provided' }}
                                     </dd>
                                 </div>
                             </dl>
