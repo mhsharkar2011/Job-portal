@@ -41,7 +41,7 @@
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Total Jobs</dt>
                         <dd class="text-lg font-semibold text-gray-900">
-                            {{ $totalJobs ?? 0 }}
+                            {{ $totalJobs ?? 0}}
                         </dd>
                     </dl>
                 </div>
@@ -143,7 +143,7 @@
                                     {{ $application->formatted_status ?? ucfirst($application->status ?? 'Unknown') }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 mt-1">{{ $application->user->name ?? 'N/A' }} • {{ $application->job->company_name ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-500 mt-1">{{ $application->user->name ?? 'N/A' }} • {{ $application->job->company->name ?? 'N/A' }}</p>
                             <div class="flex items-center mt-2">
                                 <span class="text-xs text-gray-500">
                                     Applied {{ $application->created_at->diffForHumans() ?? 'N/A' }}
@@ -198,7 +198,7 @@
             @empty
                 <div class="px-6 py-8 text-center">
                     <i class="fa-solid fa-briefcase text-gray-300 text-4xl mb-3"></i>
-                    <p class="text-gray-500">No jobs posted yet</p>
+                    <p class="text-gray-500">No jobs posted</p>
                 </div>
             @endforelse
         </div>
