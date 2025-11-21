@@ -15,14 +15,46 @@ class ApplicationController extends Controller
 
     public function index(Job $job)
     {
+        // Application statistics
+        $data = [
+            'totalPending' => Application::pending()->count(),
+            'totalReviewed' => Application::reviewed()->count(),
+            'totalAccepted' => Application::accepted()->count(),
+            'totalRejected' => Application::rejected()->count(),
+            'totalApplications' => Application::count(),
+        ];
+
         $applications = Application::with(['job', 'job.company'])
             ->where('user_id', auth()->id())
             ->latest()
             ->paginate(10);
 
-        return view('applications.index', compact('applications', 'job'));
+        return view('applications.index', compact('applications', 'job', 'data'));
     }
 
+
+    public function adminApplicationIndex(Job $job)
+    {
+        // Application statistics
+        $data = [
+            'totalPending' => Application::pending()->count(),
+            'totalReviewed' => Application::reviewed()->count(),
+            'totalAccepted' => Application::accepted()->count(),
+            'totalRejected' => Application::rejected()->count(),
+            'totalApplications' => Application::count(),
+        ];
+        // Build query for applications
+        $applicationsQuery = Application::with(['job', 'job.company']);
+
+        // Filter by specific job if provided
+        // if ($job) {
+        //     $applicationsQuery->where('job_id', $job->id);
+        // }
+
+        $applications = $applicationsQuery->latest()->paginate(10);
+
+        return view('applications.index', compact( 'applications','job','data'));
+    }
 
 
     public function create(Job $job)
@@ -132,6 +164,34 @@ class ApplicationController extends Controller
         return view('applications.show', compact('application'));
     }
 
+    public function adminApplicationShow(Application $application)
+    {
+        // Authorization - user can only view their own applications
+        if (auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $application->load(['job.company', 'user']);
+
+        return view('applications.show', compact('application'));
+    }
+
+
+    public function applicationUpdateStatus(Request $request, Application $application)
+    {
+        $validated = $request->validate([
+            // 'status' => 'required|in:pending,under_review,shortlisted,interview,accepted,rejected',
+            'status' => 'required|in:pending,reviewed,accepted,rejected',
+            'notes' => 'nullable|string',
+        ]);
+
+        $application->update($validated);
+
+        return redirect()->route('admin.applications.index', $application)
+            ->with('success', 'Application status updated successfully.');
+    }
+
+
     public function destroy(Application $application)
     {
         // Authorization - user can only delete their own applications
@@ -232,7 +292,7 @@ class ApplicationController extends Controller
         return view('applications.index', compact('job', 'applications'));
     }
 
-     public function downloadResume(Application $application)
+    public function downloadResume(Application $application)
     {
         // Authorization - only job owner can download resumes
         if ($application->job->user_id !== auth()->id()) { // Changed to user_id
@@ -246,7 +306,7 @@ class ApplicationController extends Controller
         return Storage::disk('public')->download($application->resume_path);
     }
 
-     public function downloadCoverLetter(Application $application)
+    public function downloadCoverLetter(Application $application)
     {
         // Authorization - only job owner can download cover letters
         if ($application->job->user_id !== auth()->id()) { // Changed to user_id

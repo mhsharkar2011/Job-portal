@@ -99,9 +99,10 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
 
         // Application Management
-        Route::get('/applications', [AdminController::class, 'applications'])->name('applications.index');
-        Route::get('/applications/{application}', [AdminController::class, 'applicationShow'])->name('applications.show');
-        Route::put('/applications/{application}/status', [AdminController::class, 'applicationUpdateStatus'])->name('applications.update-status');
+        Route::get('/applications', [ApplicationController::class, 'adminApplicationIndex'])->name('applications.index');
+        Route::get('/applications/{application}', [ApplicationController::class, 'adminApplicationShow'])->name('applications.show');
+        Route::get('/applications/{application}/edit', [ApplicationController::class, 'adminApplicationEdit'])->name('applications.edit');
+        Route::put('/applications/{application}/status', [ApplicationController::class, 'applicationUpdateStatus'])->name('applications.update-status');
         Route::delete('/applications/{application}', [AdminController::class, 'applicationsDestroy'])->name('applications.destroy');
         Route::get('/applications/{application}/download-application', [AdminController::class, 'applicationDownload'])->name('applications.download');
 

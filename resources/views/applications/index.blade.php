@@ -4,28 +4,42 @@
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
                 <div class="p-6">
                     <!-- Header -->
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900">Applicants for {{ $job->job_title }}</h2>
-                            <p class="text-gray-600 mt-2">{{ $job->company_name }} • {{ $job->location }}</p>
-                            <div class="flex items-center space-x-4 mt-2">
-                                <span class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                                    Total Applicants: {{ $applications->total() }}
-                                </span>
-                                <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                                    Pending: {{ $job->pending_applications_count }}
-                                </span>
-                            </div>
-                        </div>
-                        <a href="{{ route('jobs.index') }}"
-                           class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200">
-                            <i class="fa-solid fa-arrow-left mr-2"></i>
-                            Back to Jobs
-                        </a>
+                    <div class="mb-8">
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            @if ($job)
+                                Applications for: {{ $job->job_title }}
+                            @else
+                                All Applications
+                            @endif
+                        </h1>
+                        <p class="text-gray-600 mt-2">Manage and review job applications</p>
                     </div>
 
+                    <!-- Statistics Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow border border-gray-200 p-6 text-center">
+                            <div class="text-2xl font-bold text-blue-600">{{ $data['totalApplications'] }}</div>
+                            <div class="text-gray-600 text-sm mt-1">Total</div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow border border-yellow-200 p-6 text-center">
+                            <div class="text-2xl font-bold text-yellow-600">{{ $data['totalPending'] }}</div>
+                            <div class="text-gray-600 text-sm mt-1">Pending</div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow border border-blue-200 p-6 text-center">
+                            <div class="text-2xl font-bold text-blue-600">{{ $data['totalReviewed'] }}</div>
+                            <div class="text-gray-600 text-sm mt-1">Reviewed</div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow border border-green-200 p-6 text-center">
+                            <div class="text-2xl font-bold text-green-600">{{ $data['totalAccepted'] }}</div>
+                            <div class="text-gray-600 text-sm mt-1">Accepted</div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow border border-red-200 p-6 text-center">
+                            <div class="text-2xl font-bold text-red-600">{{ $data['totalRejected'] }}</div>
+                            <div class="text-gray-600 text-sm mt-1">Rejected</div>
+                        </div>
+                    </div>
                     <!-- Applications Table -->
-                    @if($applications->count() > 0)
+                    @if ($applications->count() > 0)
                         <div class="relative overflow-x-auto shadow-md rounded-lg">
                             <table class="w-full text-sm text-left text-gray-700">
                                 <thead class="text-xs text-gray-800 uppercase bg-gray-50 border-b">
@@ -56,20 +70,25 @@
                                             <!-- Applicant Info -->
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center space-x-3">
-                                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                    <div
+                                                        class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                                                         <span class="text-sm font-medium text-blue-800">
                                                             {{ substr($application->full_name, 0, 1) }}
                                                         </span>
                                                     </div>
                                                     <div>
-                                                        <div class="font-medium text-gray-900">{{ $application->full_name }}</div>
-                                                        @if($application->skills_array)
+                                                        <div class="font-medium text-gray-900">
+                                                            {{ $application->full_name }}</div>
+                                                        @if ($application->skills_array)
                                                             <div class="text-xs text-gray-500 mt-1">
-                                                                @foreach(array_slice($application->skills_array, 0, 2) as $skill)
-                                                                    <span class="inline-block bg-gray-100 px-2 py-1 rounded mr-1">{{ $skill }}</span>
+                                                                @foreach (array_slice($application->skills_array, 0, 2) as $skill)
+                                                                    <span
+                                                                        class="inline-block bg-gray-100 px-2 py-1 rounded mr-1">{{ $skill }}</span>
                                                                 @endforeach
-                                                                @if(count($application->skills_array) > 2)
-                                                                    <span class="text-gray-400">+{{ count($application->skills_array) - 2 }} more</span>
+                                                                @if (count($application->skills_array) > 2)
+                                                                    <span
+                                                                        class="text-gray-400">+{{ count($application->skills_array) - 2 }}
+                                                                        more</span>
                                                                 @endif
                                                             </div>
                                                         @endif
@@ -84,7 +103,7 @@
                                                         <i class="fa-solid fa-envelope mr-2 text-gray-400"></i>
                                                         {{ $application->email }}
                                                     </div>
-                                                    @if($application->phone)
+                                                    @if ($application->phone)
                                                         <div class="flex items-center text-sm text-gray-600">
                                                             <i class="fa-solid fa-phone mr-2 text-gray-400"></i>
                                                             {{ $application->phone }}
@@ -95,8 +114,9 @@
 
                                             <!-- Experience -->
                                             <td class="px-6 py-4">
-                                                @if($application->experience_years)
-                                                    <span class="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
+                                                @if ($application->experience_years)
+                                                    <span
+                                                        class="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
                                                         <i class="fa-solid fa-briefcase mr-1"></i>
                                                         {{ $application->experience_years }} years
                                                     </span>
@@ -107,20 +127,21 @@
 
                                             <!-- Status -->
                                             <td class="px-6 py-4">
-                                                <form action="{{ route('applications.updateStatus', $application) }}" method="POST" class="inline">
+                                                <form action="{{ route('applications.updateStatus', $application) }}"
+                                                    method="POST" class="inline">
                                                     @csrf
                                                     @method('PUT')
-                                                    <select name="status"
-                                                            onchange="this.form.submit()"
-                                                            class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors
+                                                    <select name="status" onchange="this.form.submit()"
+                                                        class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors
                                                                 {{ $application->status === 'accepted' ? 'bg-green-100 text-green-800' : '' }}
-                                                                {{ $application->status === 'rejected' ? 'bg-red-100 text-red-800' : '' }}
                                                                 {{ $application->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                                                {{ $application->status === 'rejected' ? 'bg-red-100 text-red-800' : '' }}
                                                                 {{ $application->status === 'under_review' ? 'bg-blue-100 text-blue-800' : '' }}
                                                                 {{ $application->status === 'shortlisted' ? 'bg-indigo-100 text-indigo-800' : '' }}
                                                                 {{ $application->status === 'interview' ? 'bg-purple-100 text-purple-800' : '' }}">
-                                                        @foreach(App\Models\Application::getStatusOptions() as $value => $label)
-                                                            <option value="{{ $value }}" {{ $application->status === $value ? 'selected' : '' }}>
+                                                        @foreach (App\Models\Application::getStatusOptions() as $value => $label)
+                                                            <option value="{{ $value }}"
+                                                                {{ $application->status === $value ? 'selected' : '' }}>
                                                                 {{ $label }}
                                                             </option>
                                                         @endforeach
@@ -132,11 +153,9 @@
                                             <td class="px-6 py-4">
                                                 <div class="flex flex-col">
                                                     <span class="text-sm font-medium text-gray-900">
-                                                        {{ $application->applied_date }}
+                                                        {{ $application->created_at }}
                                                     </span>
-                                                    <span class="text-xs text-gray-500">
-                                                        {{ $application->applied_time }}
-                                                    </span>
+
                                                 </div>
                                             </td>
 
@@ -144,34 +163,35 @@
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center justify-center space-x-3">
                                                     <!-- View Resume -->
-                                                    @if($application->resume)
-                                                        <a href="{{ asset('storage/' . $application->resume) }}"
-                                                           target="_blank"
-                                                           class="text-blue-600 hover:text-blue-900 transition-colors duration-200"
-                                                           title="View Resume">
+                                                    @if ($application->resume_path)
+                                                        <a href="{{ asset('storage/' . $application->resume_path) }}"
+                                                            target="_blank"
+                                                            class="text-blue-600 hover:text-blue-900 transition-colors duration-200"
+                                                            title="View Resume">
                                                             <i class="fa-solid fa-file-pdf text-lg"></i>
                                                         </a>
                                                     @endif
 
                                                     <!-- View Cover Letter -->
-                                                    @if($application->cover_letter)
-                                                        <a href="{{ asset('storage/' . $application->cover_letter) }}"
-                                                           target="_blank"
-                                                           class="text-green-600 hover:text-green-900 transition-colors duration-200"
-                                                           title="View Cover Letter">
+                                                    @if ($application->cover_letter_path)
+                                                        <a href="{{ asset('storage/' . $application->cover_letter_path) }}"
+                                                            target="_blank"
+                                                            class="text-green-600 hover:text-green-900 transition-colors duration-200"
+                                                            title="View Cover Letter">
                                                             <i class="fa-solid fa-file-lines text-lg"></i>
                                                         </a>
                                                     @endif
 
                                                     <!-- Delete Application -->
-                                                    <form method="POST" action="{{ route('applications.destroy', $application) }}"
-                                                          class="inline"
-                                                          onsubmit="return confirm('Are you sure you want to delete this application?')">
+                                                    <form method="POST"
+                                                        action="{{ route('applications.destroy', $application) }}"
+                                                        class="inline"
+                                                        onsubmit="return confirm('Are you sure you want to delete this application?')">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
-                                                                class="text-red-600 hover:text-red-900 transition-colors duration-200"
-                                                                title="Delete Application">
+                                                            class="text-red-600 hover:text-red-900 transition-colors duration-200"
+                                                            title="Delete Application">
                                                             <i class="fa-regular fa-trash-can text-lg"></i>
                                                         </button>
                                                     </form>

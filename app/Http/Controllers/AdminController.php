@@ -26,19 +26,6 @@ class AdminController extends Controller
         $employerRole = Role::where('slug', 'employer')->first();
         $seekerRole = Role::where('slug', 'job-seeker')->first();
 
-        // System overview statistics
-        $stats = [
-            'totalUsers' => User::count(),
-            'totalEmployers' => $employerRole ? $employerRole->users()->count() : 0,
-            'totalJobSeekers' => $seekerRole ? $seekerRole->users()->count() : 0,
-            'totalJobs' => Job::count(),
-            'activeJobs' => Job::where('is_active', true)->count(),
-            'totalApplications' => Application::count(),
-            'pendingApplications' => Application::where('status', 'pending')->count(),
-            'todaysApplications' => Application::whereDate('created_at', today())->count(),
-            'todaysRegistrations' => User::whereDate('created_at', today())->count(),
-        ];
-
         // Recent activity
         $recentUsers = User::with(['roles', 'jobs', 'applications'])
             ->withCount(['jobs', 'applications'])
@@ -46,13 +33,14 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
-        $recentJobs = Job::withCount('applications')
-            ->with('user')
+        // Recent jobs with application counts
+        $recentJobs = Job::with(['company', 'category', 'user'])
+            ->withCount('applications')
             ->latest()
-            ->take(5)
+            ->take(10)
             ->get();
 
-        $recentApplications = Application::with(['job', 'user'])
+        $recentApplications = Application::with(['job.company', 'job', 'user'])
             ->latest()
             ->take(5)
             ->get();
@@ -65,14 +53,23 @@ class AdminController extends Controller
             ->whereYear('created_at', date('Y'))
             ->groupBy('month')
             ->get();
+ // System overview statistics
+        $data = [
+        'totalApplications' => Application::count(),
+        'totalJobs' => Job::count(),
+        'totalUsers' => User::count(),
+        'totalEmployers' => $employerRole ? $employerRole->users()->count() : 0,
+        'totalJobSeekers' => $seekerRole ? $seekerRole->users()->count() : 0,
+        'activeJobs' => Job::where('is_active', true)->count(),
+        'pendingApplications' => Application::where('status', 'pending')->count(),
+        'todaysApplications' => Application::whereDate('created_at', today())->count(),
+        'recentJobs' => $recentJobs,
+        'recentApplications' => $recentApplications,
+    ];
 
-        return view('dashboards.admin', compact(
-            'stats',
-            'recentUsers',
-            'recentJobs',
-            'recentApplications',
-            'monthlyRegistrations'
-        ));
+
+        // Pass ALL required variables to the view
+        return view('dashboards.admin',$data);
     }
 
     // Admin User Management -----------------------------------------------------------------------------------
@@ -378,19 +375,6 @@ class AdminController extends Controller
         $application->load(['job', 'user']);
 
         return view('admin.applications.show', compact('application'));
-    }
-
-    public function applicationUpdateStatus(Request $request, Application $application)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:pending,under_review,shortlisted,interview,accepted,rejected',
-            'notes' => 'nullable|string',
-        ]);
-
-        $application->update($validated);
-
-        return redirect()->route('admin.applications.index', $application)
-            ->with('success', 'Application status updated successfully.');
     }
 
     // Download Reports
