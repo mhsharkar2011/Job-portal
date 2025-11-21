@@ -64,6 +64,8 @@ class AdminController extends Controller
         'pendingApplications' => Application::where('status', 'pending')->count(),
         'todaysApplications' => Application::whereDate('created_at', today())->count(),
         'recentJobs' => $recentJobs,
+        'recentUsers' => $recentUsers,
+        'monthlyRegistrations' => $monthlyRegistrations,
         'recentApplications' => $recentApplications,
     ];
 

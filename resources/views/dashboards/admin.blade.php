@@ -13,7 +13,7 @@
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">Total Applications</dt>
                         <dd class="text-lg font-semibold text-gray-900">
-                            {{ $totalApplications ?? 0 }}
+                            {{ $totalApplications }}
                         </dd>
                     </dl>
                 </div>

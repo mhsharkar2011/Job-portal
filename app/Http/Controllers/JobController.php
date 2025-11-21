@@ -102,9 +102,32 @@ class JobController extends Controller
 
                 // Create job with additional fields
                 $job = Job::create([
-                    ...$validated,
                     'user_id' => auth()->id(),
-                    'is_active' => true,
+                    'category_id' => $validated['category_id'],
+                    'company_id' => $validated['company_id'],
+                    'job_title' => $validated['job_title'],
+                    'job_description' => $validated['job_description'],
+                    'requirement' => $validated['requirement'],
+                    'location' => $validated['location'],
+                    'experience_minimum' => $validated['experience_minimum'],
+                    'experience_maximum' => $validated['experience_maximum'],
+                    'experience_unit' => $validated['experience_unit'],
+                    'role' => $validated['role'],
+                    'employment_type' => $validated['employment_type'],
+                    'salary_minimum' => $validated['salary_minimum'],
+                    'salary_maximum' => $validated['salary_maximum'],
+                    'salary_currency' => $validated['salary_currency'],
+                    'key_skills' => $validated['key_skills'],
+                    'positions_available' => $validated['positions_available'],
+                    'positions_filled' => 0, // Default value
+                    'accepting_applications' => true, // Default value
+                    'is_active' => true, // Default value
+                    'published_at' => now(), // Current timestamp
+                    'application_deadline' => $validated['application_deadline'] ?? null,
+                    'is_featured' => false, // Default value
+                    'is_urgent' => false, // Default value
+                    'featured_until' => null, // Default value
+                    'logo' => $validated['logo'] ?? null,
                 ]);
 
                 return redirect()->route('admin.jobs.index')

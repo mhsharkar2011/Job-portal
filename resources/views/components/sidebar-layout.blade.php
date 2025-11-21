@@ -5,7 +5,12 @@
         <div class="p-6 border-b border-gray-200">
             <h1 class="text-xl font-bold text-gray-800">JobPortal</h1>
         </div>
-
+        @php
+            $user = Auth::user();
+            $isSeeker = $user->isSeeker();
+            $isEmployer = $user->isEmployer();
+            $isAdmin = $user->isAdmin();
+        @endphp
         <!-- Navigation -->
         <nav class="p-4 space-y-2">
             <a href="{{ route('dashboard') }}"
@@ -22,13 +27,13 @@
                         class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('seeker/applications*') ? 'bg-blue-50 text-blue-600' : '' }}">
                         My Applications
                     </a>
-                @elseif(auth()->user()->isEmployer() || auth()->user()->isAdmin())
+                @elseif($isEmployer || $isAdmin)
                     <a href="{{ route('companies.index') }}"
                         class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('companies*') ? 'bg-blue-50 text-blue-600' : '' }}">
                         Companies
                     </a>
-                     <a href="{{ route('jobs.index') }}"
-                        class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('jobs') ? 'bg-blue-50 text-blue-600' : '' }}">
+                    <a href="{{ route('jobs.index') }}"
+                        class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('jobs*') ? 'bg-blue-50 text-blue-600' : '' }}">
                         All Jobs
                     </a>
                     <a href="{{ route('jobs.create') }}"

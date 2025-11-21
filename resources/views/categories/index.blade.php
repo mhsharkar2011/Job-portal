@@ -12,11 +12,13 @@
                     <h1 class="text-3xl font-bold text-gray-900 mb-2">Categories</h1>
                     <p class="text-gray-600">Manage job categories</p>
                 </div>
+                @auth
                 <a href="{{ route('categories.create') }}"
                    class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors duration-200">
                     <i class="fa-solid fa-plus mr-2"></i>
                     Add Category
                 </a>
+                @endauth
             </div>
         </div>
 

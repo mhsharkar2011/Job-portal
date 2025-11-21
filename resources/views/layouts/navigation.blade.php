@@ -28,13 +28,16 @@
                         <i class="fa-solid fa-building mr-2"></i>
                         Companies
                     </a>
-
-                    <a href="{{ route('jobs.create') }}"
-                        class="px-4 py-2 text-sm font-medium rounded-lg transition-all
-                              {{ request()->is('auth/jobs/create') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
-                        <i class="fa-solid fa-plus mr-2"></i>
-                        Post Job
-                    </a>
+                    @auth
+                        @if (auth()->user()->isEmployer() || auth()->user()->isAdmin())
+                            <a href="{{ route('jobs.create') }}"
+                                class="px-4 py-2 text-sm font-medium rounded-lg transition-all
+                              {{ request()->is('jobs/create') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                                <i class="fa-solid fa-plus mr-2"></i>
+                                Post Job
+                            </a>
+                        @endif
+                    @endauth
                 </div>
             </div>
 
@@ -45,11 +48,11 @@
                     <!-- Post Job Button -->
 
                     <div class="hidden lg:flex items-center space-x-1">
-                        <a href="{{ route('jobs.browse') }}"
+                        <a href="{{ route('home.jobs.browse') }}"
                             class="px-4 py-2 text-sm font-medium rounded-lg transition-all
-                              {{ request()->is('jobs/browse') || (request()->is('admin/jobs') && !request()->is('admin/jobs/*/edit') && !request()->is('jobs/create')) ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
+                              {{ request()->is('jobs/browse') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                             <i class="fa-solid fa-magnifying-glass mr-2"></i>
-                            Browse Jobs
+                            Jobs
                         </a>
                     </div>
 
@@ -335,7 +338,7 @@
 
                             <!-- Admin Menus -->
                             @if ($isAdmin)
-                                <a href="{{ route('admin.dashboard') }}"
+                                <a href="{{ route('dashboard') }}"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-cog mr-3 w-4 text-center"></i>
                                     Admin Dashboard
