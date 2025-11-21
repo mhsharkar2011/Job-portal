@@ -29,7 +29,7 @@
                         Companies
                     </a>
 
-                    <a href="{{ route('admin.jobs.create') }}"
+                    <a href="{{ route('jobs.create') }}"
                         class="px-4 py-2 text-sm font-medium rounded-lg transition-all
                               {{ request()->is('auth/jobs/create') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                         <i class="fa-solid fa-plus mr-2"></i>
@@ -343,14 +343,14 @@
                             @endif
 
                             @if ($isAdmin)
-                                <a href="{{ route('admin.jobs.create') }}"
+                                <a href="{{ route('jobs.create') }}"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-plus mr-3 w-4 text-center"></i>
                                     Post a Job
                                 </a>
                             @endif
                             @if ($isAdmin)
-                                <a href="{{ route('admin.jobs.index') }}"
+                                <a href="{{ route('jobs.index') }}"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-search mr-3 w-4 text-center"></i>
                                     Browse Jobs

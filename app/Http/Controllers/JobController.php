@@ -45,7 +45,7 @@ class JobController extends Controller
     {
         $categories = Category::active()->ordered()->get();
         $companies = Company::where('user_id', auth()->id())->get();
-        return view('admin.jobs.create', compact('categories', 'companies'));
+        return view('jobs.create', compact('categories', 'companies'));
     }
 
     /**

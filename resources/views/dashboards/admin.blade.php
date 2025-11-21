@@ -49,7 +49,7 @@
         </div>
         <div class="bg-gray-50 px-5 py-3">
             <div class="text-sm">
-                <a href="{{ route('admin.jobs.index') }}" class="font-medium text-green-600 hover:text-green-900">
+                <a href="{{ route('jobs.index') }}" class="font-medium text-green-600 hover:text-green-900">
                     Manage jobs
                 </a>
             </div>
@@ -166,7 +166,7 @@
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-medium text-gray-900">Recent Jobs</h3>
-                <a href="{{ route('admin.jobs.index') }}" class="text-sm text-blue-600 hover:text-blue-900 font-medium">
+                <a href="{{ route('jobs.index') }}" class="text-sm text-blue-600 hover:text-blue-900 font-medium">
                     View all
                 </a>
             </div>
@@ -289,7 +289,7 @@
         </div>
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <a href="{{ route('admin.jobs.create') }}"
+                <a href="{{ route('jobs.create') }}"
                    class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors duration-200">
                     <div class="flex-shrink-0">
                         <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">

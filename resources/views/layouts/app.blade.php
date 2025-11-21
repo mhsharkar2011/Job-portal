@@ -59,8 +59,7 @@
     <div class="flex">
         <!-- Sidebar - Only show on job browsing pages -->
         @include('layouts.sidebar')
-        {{-- @if(request()->is('jobs/browse') || request()->is('jobs') && !request()->is('jobs/*/edit') && !request()->is('jobs/create'))
-        @endif --}}
+
 
         <!-- Main Content -->
         <main class="flex-1 min-h-screen">
