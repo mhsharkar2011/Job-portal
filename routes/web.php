@@ -27,9 +27,9 @@ Route::get('register', [AuthController::class, 'register'])->name('register');
 Route::post('register', [AuthController::class, 'storeRegister'])->name('storeRegister');
 
 // Public job routes
-Route::get('seekers/jobs', [SeekerController::class, 'index'])->name('seekers.jobs.index');
-Route::get('seekers/jobs/{job}', [JobController::class, 'show'])->name('seekers.jobs.show');
-Route::get('jobs/browse', [JobController::class, 'browse'])->name('jobs.browse');
+Route::get('jobs', [HomeController::class, 'indexJobs'])->name('home.jobs.index');
+Route::get('jobs/{job}', [HomeController::class, 'showJob'])->name('jobs.show');
+Route::get('jobs/browse', [HomeController::class, 'browseJobs'])->name('jobs.browse');
 
 
 // Public company routes

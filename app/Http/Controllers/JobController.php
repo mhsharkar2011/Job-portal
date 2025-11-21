@@ -170,8 +170,6 @@ class JobController extends Controller
             });
         }
 
-        // ... rest of your filter logic
-
         // Apply sorting
         switch ($request->get('sort', 'newest')) {
             case 'salary_high':
