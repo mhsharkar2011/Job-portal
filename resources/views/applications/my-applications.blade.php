@@ -95,14 +95,14 @@
                                         <td class="px-6 py-4">
                                             <div class="flex items-start space-x-3">
                                                 @if ($application->job->logo)
-                                                    <img src="{{ asset('storage/' . $application->job->logo) }}"
+                                                    <img src="{{ asset('storage/' . $application->company->logo) }}"
                                                         alt="{{ $application->job->company_name }} logo"
-                                                        class="w-12 h-12 rounded-lg object-cover border border-gray-200">
+                                                        class="w-12 h-12 rounded-lg object-cover border border-gray-200"> noooo
                                                 @else
                                                     <div
                                                         class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-300">
                                                         <span class="text-lg font-semibold text-gray-600">
-                                                            {{ substr($application->job->company_name, 0, 1) }}
+                                                            {{ substr($application->job->company->name, 0, 1) }} Name
                                                         </span>
                                                     </div>
                                                 @endif

@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-8xl mx-auto px-4 sm:px-8 lg:px-10">
             <div class="bg-white shadow-lg rounded-lg overflow-hidden">
                 <div class="p-6">
                     <!-- Header -->
@@ -69,21 +69,24 @@
                     <!-- Applications Table -->
                     <div class="relative overflow-x-auto shadow-md rounded-lg">
                         <table class="w-full text-sm text-left text-gray-700">
-                            <thead class="text-sm text-gray-800 uppercase bg-gray-50 border-b">
+                            <thead class="text-sm text-gray-600 uppercase bg-blue-100 border-b">
                                 <tr>
-                                    <th scope="col" class="px-6 py-4 font-semibold">
+                                    <th scope="col" class="px-6 py-4">
                                         Job Details
                                     </th>
-                                    <th scope="col" class="px-6 py-4 font-semibold">
+                                    <th scope="col" class="px-6 py-4">
                                         Company
                                     </th>
-                                    <th scope="col" class="px-6 py-4 font-semibold">
+                                    <th scope="col" class="px-6 py-4">
+                                        Applicants Details
+                                    </th>
+                                    <th scope="col" class="px-6 py-4">
                                         Status
                                     </th>
-                                    <th scope="col" class="px-6 py-4 font-semibold">
+                                    <th scope="col" class="px-6 py-4">
                                         Applied Date
                                     </th>
-                                    <th scope="col" class="px-6 py-4 font-semibold text-center">
+                                    <th scope="col" class="px-6 py-4 text-center">
                                         Actions
                                     </th>
                                 </tr>
@@ -94,15 +97,15 @@
                                         <!-- Job Details -->
                                         <td class="px-6 py-4">
                                             <div class="flex items-start space-x-3">
-                                                @if ($application->job->logo)
-                                                    <img src="{{ asset('storage/' . $application->job->logo) }}"
+                                                @if ($application->job->company->logo)
+                                                    <img src="{{ asset('storage/' . $application->job->company->logo) }}"
                                                         alt="{{ $application->job->company_name }} logo"
-                                                        class="w-12 h-12 rounded-lg object-cover border border-gray-200">
+                                                        class="w-16 h-16 rounded-lg object-cover border border-gray-200 mt-6">
                                                 @else
                                                     <div
-                                                        class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-300">
+                                                        class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-300 mt-6">
                                                         <span class="text-lg font-semibold text-gray-600">
-                                                            {{ substr($application->job->company_name, 0, 1) }}
+                                                            {{ substr($application->job->company->name, 0, 3) }}
                                                         </span>
                                                     </div>
                                                 @endif
@@ -123,9 +126,9 @@
                                                             <div class="flex items-center text-sm text-gray-600">
                                                                 <i
                                                                     class="fa-solid fa-money-bill-wave mr-2 text-gray-400"></i>
-                                                                <span>${{ number_format($application->job->salary_minimum) }}
+                                                                <span>BDT{{ number_format($application->job->salary_minimum) }}
                                                                     -
-                                                                    ${{ number_format($application->job->salary_maximum) }}</span>
+                                                                    BDT{{ number_format($application->job->salary_maximum) }}</span>
                                                             </div>
                                                         @endif
                                                     </div>
@@ -137,14 +140,41 @@
                                         <td class="px-6 py-4">
                                             <div class="text-sm">
                                                 <p class="font-medium text-gray-900">
-                                                    {{ $application->job->company_name }}</p>
-                                                <p class="text-gray-500 mt-1">{{ $application->email }}</p>
-                                                @if ($application->phone)
-                                                    <p class="text-gray-500">{{ $application->phone }}</p>
-                                                @endif
+                                                    {{ $application->job->company->name }}</p>
                                             </div>
                                         </td>
-
+                                        {{-- User Details --}}
+                                        <td class="px-3 py-4">
+                                            <div class="flex items-start space-x-3 -mt-3">
+                                                @if ($application->user->profile_photo_path)
+                                                    <img src="{{ asset('storage/' . $application->user->profile_photo_path) }}"
+                                                        alt="{{ $application->user->name }} logo"
+                                                        class="w-16 h-16 rounded-lg object-cover border border-gray-200">
+                                                @else
+                                                    <div
+                                                        class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-300">
+                                                        <span class="text-lg font-semibold text-gray-600">
+                                                            {{ substr($application->user->name, 0, 3) }}
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                                <div class="flex-1 -mt-2">
+                                                    <h3 class="font-semibold text-gray-900 text-base">
+                                                        {{ $application->user->name }}
+                                                    </h3>
+                                                    <div class="mt-2 space-y-1">
+                                                        <div class="flex items-center text-sm text-gray-600">
+                                                           <i class="fa-regular fa-envelope  mr-2 text-gray-400"></i>
+                                                            <span> {{ $application->user->email }}</span>
+                                                        </div>
+                                                        <div class="flex items-center text-sm text-gray-600">
+                                                            <i class="fa-solid fa-mobile-screen mr-2 text-gray-400"></i>
+                                                            <span>{{ $application->user->phone }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
                                         <!-- Status -->
                                         <td class="px-6 py-4">
                                             <div class="flex flex-col space-y-2">
