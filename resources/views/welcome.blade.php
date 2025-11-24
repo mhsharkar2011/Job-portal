@@ -91,7 +91,7 @@
                         class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-8 py-4 rounded-lg font-bold text-lg transition duration-300 transform hover:scale-105 shadow-lg">
                         <i class="fas fa-search mr-2"></i>Find Jobs
                     </a>
-                    <a href="{{ auth()->check() ? route('jobs.create') : route('register') }}"
+                    <a href="{{ auth()->check() ? route('auth.jobs.create') : route('register') }}"
                         class="bg-transparent hover:bg-white hover:text-blue-600 border-2 border-white px-8 py-4 rounded-lg font-bold text-lg transition duration-300 shadow-lg">
                         <i class="fas fa-briefcase mr-2"></i>Post a Job
                     </a>
@@ -360,7 +360,7 @@
                             <span class="text-gray-700">Track application status</span>
                         </li>
                     </ul>
-                    <a href="{{ auth()->check() ? route('jobs.create') : route('register') }}"
+                    <a href="{{ auth()->check() ? route('auth.jobs.create') : route('register') }}"
                         class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition duration-300">
                         <i class="fas fa-rocket mr-2"></i>Post a Job for Free
                     </a>
@@ -418,7 +418,7 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-4">For Employers</h4>
                     <ul class="space-y-2 text-gray-400">
-                        <li><a href="{{ route('jobs.create') }}"
+                        <li><a href="{{ route('auth.jobs.create') }}"
                                 class="hover:text-white transition duration-300">Post a Job</a></li>
                         <li><a href="#" class="hover:text-white transition duration-300">Browse Candidates</a>
                         </li>

@@ -9,21 +9,23 @@ class Application extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'job_id',
-        'user_id',
-        'full_name',
-        'email',
-        'phone',
-        'experience_years',
-        'address',
-        'skills',
-        'education',
-        'resume_path',
-        'cover_letter_path',
-        'status',
-        'notes',
-    ];
+    // protected $fillable = [
+    //     'job_id',
+    //     'user_id',
+    //     'full_name',
+    //     'email',
+    //     'phone',
+    //     'experience_years',
+    //     'address',
+    //     'skills',
+    //     'education',
+    //     'resume_path',
+    //     'cover_letter_path',
+    //     'status',
+    //     'notes',
+    // ];
+
+    protected $guarded = [];
 
     protected $casts = [
         'experience_years' => 'integer',

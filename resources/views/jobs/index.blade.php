@@ -113,7 +113,7 @@
                             </div>
                             <h3 class="text-lg font-medium text-gray-900 mb-2">No jobs posted yet</h3>
                             <p class="text-gray-600 mb-6">Get started by creating your first job posting.</p>
-                            <a href="{{ route('jobs.create') }}"
+                            <a href="{{ route('auth.jobs.create') }}"
                                 class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
                                 <i class="fa-solid fa-plus mr-2"></i>
                                 Post a Job

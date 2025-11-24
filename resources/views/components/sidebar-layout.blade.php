@@ -23,7 +23,7 @@
                         class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('jobs*') ? 'bg-blue-50 text-blue-600' : '' }}">
                         Browse Jobs
                     </a>
-                    <a href="{{ route('seeker.my-applications') }}"
+                    <a href="{{ route('seeker.myApplications') }}"
                         class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('seeker/applications*') ? 'bg-blue-50 text-blue-600' : '' }}">
                         My Applications
                     </a>
@@ -36,7 +36,7 @@
                         class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('jobs*') ? 'bg-blue-50 text-blue-600' : '' }}">
                         All Jobs
                     </a>
-                    <a href="{{ route('jobs.create') }}"
+                    <a href="{{ route('auth.jobs.create') }}"
                         class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('jobs/create') ? 'bg-blue-50 text-blue-600' : '' }}">
                         Post a Job
                     </a>

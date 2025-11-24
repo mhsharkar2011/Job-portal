@@ -117,7 +117,7 @@
                             <div class="text-center py-8">
                                 <i class="fas fa-briefcase text-gray-300 text-4xl mb-4"></i>
                                 <p class="text-gray-500">No jobs posted yet.</p>
-                                <a href="{{ route('jobs.create') }}" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-150">
+                                <a href="{{ route('auth.jobs.create') }}" class="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-150">
                                     Post Your First Job
                                 </a>
                             </div>
@@ -183,7 +183,7 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <a href="{{ route('jobs.create') }}"
+                        <a href="{{ route('auth.jobs.create') }}"
                            class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-200 transition duration-150">
                             <div class="flex-shrink-0 bg-blue-100 rounded-lg p-3">
                                 <i class="fas fa-plus text-blue-600 text-lg"></i>

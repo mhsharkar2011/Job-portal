@@ -30,7 +30,7 @@
                     </a>
                     @auth
                         @if (auth()->user()->isEmployer() || auth()->user()->isAdmin())
-                            <a href="{{ route('jobs.create') }}"
+                            <a href="{{ route('auth.jobs.create') }}"
                                 class="px-4 py-2 text-sm font-medium rounded-lg transition-all
                               {{ request()->is('jobs/create') ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100' }}">
                                 <i class="fa-solid fa-plus mr-2"></i>
@@ -312,7 +312,7 @@
                             @endif
 
                             @if ($isSeeker)
-                                <a href="{{ route('seeker.my-applications') }}"
+                                <a href="{{ route('seeker.myApplications') }}"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-file-alt mr-3 w-4 text-center"></i>
                                     My Applications
@@ -321,7 +321,7 @@
 
                             <!-- Employer Menus -->
                             @if ($isEmployer)
-                                <a href="{{ route('employer.jobs.create') }}"
+                                <a href="{{ route('auth.jobs.create') }}"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-plus mr-3 w-4 text-center"></i>
                                     Post a Job
@@ -329,7 +329,7 @@
                             @endif
 
                             @if ($isEmployer)
-                                <a href="{{ route('employer.jobs') }}"
+                                <a href="{{ route('jobs.index') }}"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-briefcase mr-3 w-4 text-center"></i>
                                     My Job Posts
@@ -346,7 +346,7 @@
                             @endif
 
                             @if ($isAdmin)
-                                <a href="{{ route('jobs.create') }}"
+                                <a href="{{ route('auth.jobs.create') }}"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
                                     <i class="fas fa-plus mr-3 w-4 text-center"></i>
                                     Post a Job
@@ -424,7 +424,7 @@
 
             <!-- Quick Actions -->
             <div class="border-t border-gray-200 pt-2">
-                <a href="{{ route('jobs.create') }}"
+                <a href="{{ route('auth.jobs.create') }}"
                     class="flex items-center space-x-3 px-4 py-3 text-green-700 hover:bg-green-50 rounded-lg transition-all"
                     @click="mobileMenuOpen = false">
                     <i class="fa-solid fa-plus w-5"></i>

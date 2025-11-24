@@ -20,7 +20,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('jobs.store') }}" method="POST" enctype="multipart/form-data"
+                    <form action="{{ route('auth.jobs.store') }}" method="POST" enctype="multipart/form-data"
                         autocomplete="off">
                         @csrf
 
@@ -92,7 +92,7 @@
                             </label>
                             <input type="text" name="job_title" id="job_title"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                value="{{ old('job_title') }}" placeholder="e.g., Senior Software Engineer" required>
+                                value="{{ old('job_title','Software Developer') }}" placeholder="e.g., Senior Software Engineer" required>
                             @error('job_title')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -105,7 +105,7 @@
                             </label>
                             <textarea name="job_description" id="job_description" rows="5"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Describe the role, responsibilities, and what you're looking for in a candidate..." required>{{ old('job_description') }}</textarea>
+                                placeholder="Describe the role, responsibilities, and what you're looking for in a candidate..." required>{{ old('job_description','Job descriptions are an essential part of any successful business. These job descriptions templates and examples can help you find the right candidate for each position and inform potential employees about what to expect from a role.') }}</textarea>
                             @error('job_description')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -118,7 +118,7 @@
                             </label>
                             <textarea name="requirement" id="requirement" rows="5"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="List the required skills, experience, and qualifications..." required>{{ old('requirement') }}</textarea>
+                                placeholder="List the required skills, experience, and qualifications..." required>{{ old('requirement','Job descriptions are an essential part of any successful business. These job descriptions templates and examples can help you find the right candidate for each position and inform potential employees about what to expect from a role.') }}</textarea>
                             @error('requirement')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -131,7 +131,7 @@
                             </label>
                             <input type="text" name="location" id="location"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                value="{{ old('location') }}" placeholder="e.g., New York, NY or Remote" required>
+                                value="{{ old('location') ?? 'Dhaka'}}" placeholder="e.g., New York, NY or Remote" required>
                             @error('location')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -198,7 +198,7 @@
                                 </label>
                                 <input type="text" name="role" id="role"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    value="{{ old('role') }}"
+                                    value="{{ old('role') ?? 'Manager' }}"
                                     placeholder="e.g., Software Engineer, Marketing Manager" required>
                                 @error('role')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -211,7 +211,7 @@
                                 </label>
                                 <input type="number" name="positions_available" id="positions_available"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    value="{{ old('positions_available', 1) }}" min="1" max="100"
+                                    value="{{ old('positions_available', 2) }}" min="1" max="100"
                                     required>
                                 @error('positions_available')
                                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -234,7 +234,7 @@
                                     </label>
                                     <input type="number" name="salary_minimum" id="salary_minimum"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value="{{ old('salary_minimum') }}" placeholder="0" required>
+                                        value="{{ old('salary_minimum',150000) }}" placeholder="0" required>
                                     @error('salary_minimum')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                     @enderror
@@ -245,7 +245,7 @@
                                     </label>
                                     <input type="number" name="salary_maximum" id="salary_maximum"
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        value="{{ old('salary_maximum') }}" placeholder="0" required>
+                                        value="{{ old('salary_maximum',160000) }}" placeholder="0" required>
                                     @error('salary_maximum')
                                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                                     @enderror
@@ -258,13 +258,13 @@
                                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         required>
                                         <option value="">Select Currency</option>
-                                        <option value="USD"
-                                            {{ old('salary_currency', 'USD') == 'USD' ? 'selected' : '' }}>
-                                            USD ($)
-                                        </option>
                                         <option value="BDT"
-                                            {{ old('salary_currency') == 'BDT' ? 'selected' : '' }}>
+                                            {{ old('salary_currency','BDT') == 'BDT' ? 'selected' : '' }}>
                                             BDT (৳)
+                                        </option>
+                                        <option value="USD"
+                                            {{ old('salary_currency') == 'USD' ? 'selected' : '' }}>
+                                            USD ($)
                                         </option>
                                         <option value="EUR"
                                             {{ old('salary_currency') == 'EUR' ? 'selected' : '' }}>
@@ -323,7 +323,7 @@
                             </label>
                             <input type="text" name="key_skills" id="key_skills"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                value="{{ old('key_skills') }}"
+                                value="{{ old('key_skills','PHP;Laravel;MYSQL') }}"
                                 placeholder="Enter skills separated by commas (e.g., PHP, Laravel, JavaScript, MySQL)"
                                 required>
                             <p class="text-sm text-gray-500 mt-1">Separate multiple skills with commas</p>

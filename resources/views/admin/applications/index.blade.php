@@ -23,8 +23,8 @@
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Total</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['total'] ?? 0 }}</dd>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Applicants</dt>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $totalApplications ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -40,7 +40,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Pending</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['pending'] ?? 0 }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $totalPending ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -56,7 +56,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Reviewed</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['reviewed'] ?? 0 }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $totalReview ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -72,7 +72,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Accepted</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['accepted'] ?? 0 }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $totalAccepted ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -88,7 +88,7 @@
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
                                     <dt class="text-sm font-medium text-gray-500 truncate">Rejected</dt>
-                                    <dd class="text-lg font-semibold text-gray-900">{{ $stats['rejected'] ?? 0 }}</dd>
+                                    <dd class="text-lg font-semibold text-gray-900">{{ $totalRejected ?? 0 }}</dd>
                                 </dl>
                             </div>
                         </div>
@@ -102,7 +102,7 @@
                     <h3 class="text-lg font-medium text-gray-900">Filters</h3>
                 </div>
                 <div class="p-6">
-                    <form method="GET" action="{{ route('admin.applications.index') }}">
+                    <form method="GET" action="{{ route('admin.applicants.index') }}">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
                                 <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
@@ -143,7 +143,7 @@
                                 <i class="fa-solid fa-filter mr-2"></i>
                                 Apply Filters
                             </button>
-                            <a href="{{ route('admin.applications.index') }}"
+                            <a href="{{ route('admin.applicants.index') }}"
                                 class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <i class="fa-solid fa-refresh mr-2"></i>
                                 Reset
@@ -222,12 +222,12 @@
                                         </div>
                                     </div>
                                     <div class="ml-4 flex-shrink-0 flex space-x-2">
-                                        <a href="{{ route('admin.applications.show', $application) }}"
+                                        <a href="{{ route('admin.applicants.show', $application) }}"
                                             class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200">
                                             <i class="fa-solid fa-eye mr-1"></i>
                                             View
                                         </a>
-                                        <a href="{{ route('admin.applications.download', $application) }}"
+                                        <a href="{{ route('admin.applicants.download', $application) }}"
                                             class="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
                                             <i class="fa-solid fa-download mr-1"></i>
                                             Resume

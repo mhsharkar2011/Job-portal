@@ -33,7 +33,7 @@
                     </div>
                 </div>
                 <div class="mt-4 flex space-x-3 md:mt-0 md:ml-4">
-                    <a href="{{ route('admin.applications.index') }}"
+                    <a href="{{ route('admin.applicants.index') }}"
                         class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         <i class="fa-solid fa-arrow-left mr-2"></i>
                         Back to List
@@ -169,7 +169,7 @@
                             </h3>
                         </div>
                         <div class="px-4 py-5 sm:p-6">
-                            <form action="{{ route('admin.applications.update-status', $application) }}" method="POST">
+                            <form action="{{ route('admin.applicants.update-status', $application) }}" method="POST">
                                 @csrf
                                 @method('PUT')
                                 <div class="space-y-4">
@@ -195,9 +195,9 @@
                                     <div>
                                         <label for="admin_notes" class="block text-sm font-medium text-gray-700">Admin
                                             Notes</label>
-                                        <textarea name="admin_notes" id="admin_notes" rows="4"
+                                        <textarea name="notes" id="admin_notes" rows="4"
                                             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                            placeholder="Add any notes about this application...">{{ old('admin_notes', $application->admin_notes ?? $application->notes) }}</textarea>
+                                            placeholder="Add any notes about this application...">{{ old('notes', $application->notes ?? $application->notes) }}</textarea>
                                     </div>
                                     <button type="submit"
                                         class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
@@ -250,7 +250,7 @@
                             </h3>
                         </div>
                         <div class="px-4 py-5 sm:p-6">
-                            <form action="{{ route('admin.applications.destroy', $application) }}" method="POST"
+                            <form action="{{ route('admin.applicants.destroy', $application) }}" method="POST"
                                 onsubmit="return confirm('Are you sure you want to delete this application? This action cannot be undone.')">
                                 @csrf
                                 @method('DELETE')

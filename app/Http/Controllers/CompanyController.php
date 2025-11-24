@@ -85,9 +85,12 @@ class CompanyController extends Controller
      */
     public function edit(Company $company)
     {
+        $company = auth()->user()->company;
         // FIXED: Use Auth::id() instead of hardcoded 1
-        if ($company->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
+        if (!$company) {
+            // Redirect to create company if doesn't exist
+            return redirect()->route('employer.company.create')
+                ->with('error', 'Please create a company profile first.');
         }
 
         $categories = Category::active()->ordered()->get();

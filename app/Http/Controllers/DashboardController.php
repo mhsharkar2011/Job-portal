@@ -69,7 +69,7 @@ class DashboardController extends Controller
  // System overview statistics
         $stats = [
         // 'totalApplications' => Application::count(),
-        'totalJobs' => Job::count(),
+        'totalJobs' => Job::count() == 1,
         'totalUsers' => User::count(),
         'totalEmployers' => $employerRole ? $employerRole->users()->count() : 0,
         'totalJobSeekers' => $seekerRole ? $seekerRole->users()->count() : 0,
@@ -81,7 +81,7 @@ class DashboardController extends Controller
         'monthlyRegistrations' => $monthlyRegistrations,
         'recentApplications' => $recentApplications,
     ];
-
+  dd($stats);
         $recentData = [
             'recentJobs' => $recentJobs,
             'recentApplications' => $recentApplications,
