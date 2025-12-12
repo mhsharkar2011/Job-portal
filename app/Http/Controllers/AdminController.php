@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Job;
 use App\Models\Application;
+use App\Models\Company;
 use App\Models\Role;
+use DateTime;
+use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -184,12 +187,12 @@ class AdminController extends Controller
 
             // Add admin-specific statistics
             $stats = [
-                'total_users' => \App\Models\User::count(),
-                'total_jobs' => \App\Models\Job::count(),
-                'total_applications' => \App\Models\Application::count(),
-                'total_companies' => \App\Models\Company::count(),
-                'pending_jobs' => \App\Models\Job::where('status', 'pending')->count(),
-                'active_jobs' => \App\Models\Job::where('status', 'active')->count(),
+                'total_users' => User::count(),
+                'total_jobs' => Job::count(),
+                'total_applications' => Application::count(),
+                'total_companies' => Company::count(),
+                'pending_jobs' => Job::where('is_active', '0')->count(),
+                'active_jobs' => Job::where('is_active', '1')->count(),
             ];
 
             return view('admin.users.show', compact('user', 'stats', 'roleName'));
@@ -251,7 +254,7 @@ class AdminController extends Controller
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:500',
-            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'profile_photo_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'remove_photo' => 'nullable|boolean',
             'roles' => 'required|array',
             'roles.*' => 'exists:roles,id',
@@ -262,14 +265,15 @@ class AdminController extends Controller
             DB::beginTransaction();
 
             // Handle profile photo
-            if ($request->hasFile('profile_photo')) {
+            if ($request->hasFile('profile_photo_path')) {
                 // Delete old photo if exists
                 if ($user->profile_photo_path) {
                     Storage::delete($user->profile_photo_path);
                 }
 
+                $avatarName = 'user_' . date('Y-m-d-H-i-s') . '_' . uniqid() . '.' . $request->file('profile_photo_path')->getClientOriginalExtension();
                 // Store new photo
-                $path = $request->file('profile_photo')->store('profile-photos', 'public');
+                $path = $request->file('profile_photo_path')->storeAs('profile-photos', $avatarName, 'public');
                 $validated['profile_photo_path'] = $path;
             }
 
@@ -323,9 +327,7 @@ class AdminController extends Controller
 
     // Job Management
 
-    public function adminJobShow(){
-
-    }
+    public function adminJobShow() {}
 
     public function jobUpdate(Request $request, Job $job)
     {
@@ -394,7 +396,7 @@ class AdminController extends Controller
         $applications = $query->latest()
             ->paginate(10);
 
-        return view('admin.applications.index',$stats, compact('applications'));
+        return view('admin.applications.index', $stats, compact('applications'));
     }
 
     public function adminApplicantShow(Application $application)
@@ -404,8 +406,9 @@ class AdminController extends Controller
         return view('admin.applications.show', compact('application'));
     }
 
-    public function adminApplicantUpdateStatus(Request $request, Application $application){
-         $validated = $request->validate([
+    public function adminApplicantUpdateStatus(Request $request, Application $application)
+    {
+        $validated = $request->validate([
             'status' => 'required|in:pending,reviewed,accepted,rejected',
             'notes' => 'nullable|string',
         ]);

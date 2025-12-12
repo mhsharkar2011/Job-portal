@@ -32,7 +32,7 @@
                         class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('companies*') ? 'bg-blue-50 text-blue-600' : '' }}">
                         Companies
                     </a>
-                    <a href="{{ route('jobs.index') }}"
+                    <a href="{{ route('admin.jobs.index') }}"
                         class="block py-2 px-4 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded transition {{ request()->is('jobs*') ? 'bg-blue-50 text-blue-600' : '' }}">
                         All Jobs
                     </a>

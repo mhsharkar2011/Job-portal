@@ -36,9 +36,11 @@ class Application extends Model
     {
         return [
             'pending' => 'Pending',
-            'reviewed' => 'Reviewed',
+            'under_reviewed' => 'Reviewed',
             'accepted' => 'Accepted',
             'rejected' => 'Rejected',
+            'shortlisted' => 'Shortlisted',
+            'interview' => 'Interview',
         ];
     }
 
@@ -47,9 +49,11 @@ class Application extends Model
     {
         $badges = [
             'pending' => 'bg-yellow-100 text-yellow-800',
-            'reviewed' => 'bg-blue-100 text-blue-800',
+            'under_reviewed' => 'bg-blue-100 text-blue-800',
             'accepted' => 'bg-green-100 text-green-800',
             'rejected' => 'bg-red-100 text-red-800',
+            'shortlisted' => 'bg-blue-100 text-blue-800',
+            'interview' => 'bg-blue-100 text-blue-800',
         ];
 
         return $badges[$this->status] ?? 'bg-gray-100 text-gray-800';
@@ -84,9 +88,9 @@ class Application extends Model
         return $query->where('status', 'pending');
     }
 
-    public function scopeReviewed($query)
+    public function scopeUnderReviewed($query)
     {
-        return $query->where('status', 'reviewed');
+        return $query->where('status', 'under_reviewed');
     }
 
     public function scopeAccepted($query)
@@ -97,6 +101,15 @@ class Application extends Model
     public function scopeRejected($query)
     {
         return $query->where('status', 'rejected');
+    }
+
+    public function scopeShortlisted($query)
+    {
+        return $query->where('status', 'shortlisted');
+    }
+
+    public function scopeInterview($query) {
+        return $query->where('status','interview');
     }
 
     // Accessors

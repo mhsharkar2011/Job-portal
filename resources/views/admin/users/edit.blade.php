@@ -100,7 +100,7 @@
                                                         Upload New Photo
                                                     </label>
                                                     <div class="mt-1 flex items-center">
-                                                        <input type="file" name="profile_photo" id="profile_photo"
+                                                        <input type="file" name="profile_photo_path" id="profile_photo"
                                                             accept="image/*" class="hidden"
                                                             onchange="previewPhoto(event)">
                                                         <label for="profile_photo"

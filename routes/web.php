@@ -79,7 +79,7 @@ Route::group(['middleware' => ['auth']], function () {
     // Application management
     Route::prefix('applications')->group(function () {
         Route::resource('/', Application::class);
-        Route::put('/{application}/status', [ApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
+        // Route::put('/{application}/status', [ApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
         Route::delete('/{application}', [ApplicationController::class, 'destroy'])->name('applications.destroy');
         Route::get('/my-applications', [ApplicationController::class, 'myApplications'])->name('applications.myApplications');
     });
@@ -100,24 +100,21 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
 
         // Job Management
-        Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
-        Route::get('/jobs/browse', [JobController::class, 'browse'])->name('jobs.browse');
-        Route::get('/applications/jobs/{job}', [JobController::class, 'adminJobShow'])->name('jobs.show');
-        Route::delete('/applications/jobs/{job}/destroy', [JobController::class, 'adminJobDestroy'])->name('jobs.destroy');
-        Route::get('/jobs/{job}/apply', [SeekerController::class, 'create'])->name('jobs.apply');
-        Route::post('/jobs/{job}/apply', [SeekerController::class, 'store'])->name('application.save');
-        Route::get('/jobs/{job}', [SeekerController::class, 'show'])->name('application.show');
-        Route::get('/jobs/{job}/edit', [SeekerController::class, 'edit'])->name('application.edit');
-        Route::put('/jobs/{job}', [SeekerController::class, 'update'])->name('application.update');
-        Route::get('/applications', [SeekerController::class, 'applications'])->name('my-applications');
+        Route::get('/jobs', [AdminJobController::class, 'index'])->name('jobs.index');
+        Route::get('/jobs/{job}/apply', [AdminJobController::class, 'create'])->name('jobs.apply');
+        Route::post('/jobs/{job}/apply', [AdminJobController::class, 'store'])->name('application.save');
+        Route::get('/jobs/{job}', [AdminJobController::class, 'show'])->name('jobs.show');
+        Route::get('/jobs/{job}/edit', [AdminJobController::class, 'edit'])->name('jobs.edit');
+        Route::put('/jobs/{job}', [AdminJobController::class, 'update'])->name('jobs.update');
+        Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->name('jobs.destroy');
 
         // Application Management
-        Route::get('/applicants', [AdminController::class, 'adminApplicantIndex'])->name('applicants.index');
-        Route::get('/applicants/{application}', [AdminController::class, 'adminApplicantShow'])->name('applicants.show');
-        Route::get('/applicants/{application}/edit', [AdminController::class, 'adminApplicantEdit'])->name('applicants.edit');
-        Route::put('/applicants/{application}/status', [AdminController::class, 'adminApplicantUpdateStatus'])->name('applicants.update-status');
-        Route::delete('/applicants/{application}', [AdminController::class, 'adminApplicantDestroy'])->name('applicants.destroy');
-        Route::get('/applicants/{application}/applicant-download', [AdminController::class, 'adminApplicantDownload'])->name('applicants.download');
+        Route::get('/applicants', [ApplicationController::class, 'index'])->name('applicants.index');
+        Route::get('/applicants/{application}', [ApplicationController::class, 'adminApplicantShow'])->name('applicants.show');
+        Route::get('/applicants/{application}/edit', [ApplicationController::class, 'adminApplicantEdit'])->name('applicants.edit');
+        Route::put('/applicants/{application}/status', [ApplicationController::class, 'adminApplicationUpdateStatus'])->name('applicants.update-status');
+        Route::delete('/applicants/{application}', [ApplicationController::class, 'adminApplicantDestroy'])->name('applicants.destroy');
+        Route::get('/applicants/{application}/applicant-download', [ApplicationController::class, 'adminApplicantDownload'])->name('applicants.download');
 
         // Settings & Reports
         Route::get('/settings', [RoleController::class, 'index'])->name('roles.index');
@@ -188,14 +185,14 @@ Route::group(['middleware' => ['auth']], function () {
         // Application Management
         Route::prefix('applications')->group(function () {
             Route::resource('/', Application::class);
-            Route::put('/{application}/status', [ApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
+            // Route::put('/{application}/status', [ApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
             Route::delete('/{application}', [ApplicationController::class, 'destroy'])->name('applications.destroy');
             Route::get('/my-applications', [ApplicationController::class, 'index'])->name('myApplications');
         });
         Route::get('/applications', [ApplicationController::class, 'adminApplicationIndex'])->name('applications.index');
         Route::get('/applications/{application}', [ApplicationController::class, 'adminApplicationShow'])->name('applications.show');
         Route::get('/applications/{application}/edit', [ApplicationController::class, 'adminApplicationEdit'])->name('applications.edit');
-        Route::put('/applications/{application}/status', [ApplicationController::class, 'applicationUpdateStatus'])->name('applications.update-status');
+        // Route::put('/applications/{application}/status', [ApplicationController::class, 'applicationUpdateStatus'])->name('applications.update-status');
         Route::delete('/applications/{application}', [AdminController::class, 'applicationsDestroy'])->name('applications.destroy');
         Route::get('/applications/{application}/download-application', [AdminController::class, 'applicationDownload'])->name('applications.download');
         // Seeker Resume Route

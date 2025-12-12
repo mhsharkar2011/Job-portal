@@ -13,23 +13,24 @@ class ApplicationController extends Controller
 {
 
 
-    public function index(Job $job)
+    public function index()
     {
         // Application statistics
         $data = [
             'totalPending' => Application::pending()->count(),
-            'totalReviewed' => Application::reviewed()->count(),
+            'totalReviewed' => Application::underReviewed()->count(),
             'totalAccepted' => Application::accepted()->count(),
             'totalRejected' => Application::rejected()->count(),
+            'totalShortlisted' => Application::shortlisted()->count(),
+            'totalInterview' => Application::interview()->count(),
             'totalApplications' => Application::count(),
         ];
 
-        $applications = Application::with(['job', 'job.company'])
-            ->where('user_id', auth()->id())
+        $applications = Application::with(['job', 'user'])
             ->latest()
             ->paginate(10);
 
-        return view('applications.index', compact('applications', 'job', 'data'));
+        return view('applications.index', compact('applications','data'));
     }
 
 
@@ -177,17 +178,17 @@ class ApplicationController extends Controller
     }
 
 
-    public function applicationUpdateStatus(Request $request, Application $application)
+    public function adminApplicationUpdateStatus(Request $request, Application $application)
     {
         $validated = $request->validate([
             // 'status' => 'required|in:pending,under_review,shortlisted,interview,accepted,rejected',
-            'status' => 'required|in:pending,reviewed,accepted,rejected',
+            'status' => 'required|in:pending,under_reviewed,accepted,rejected,shortlisted,interview',
             'notes' => 'nullable|string',
         ]);
 
         $application->update($validated);
 
-        return redirect()->route('admin.applications.index', $application)
+        return redirect()->route('admin.applicants.index', $application)
             ->with('success', 'Application status updated successfully.');
     }
 

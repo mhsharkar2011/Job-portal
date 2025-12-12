@@ -201,7 +201,7 @@
                                 </div>
                             </dl>
                             <div class="mt-4 text-center">
-                                <a href="{{ route('admin.applications.index', ['job' => $job->id]) }}"
+                                <a href="{{ route('admin.jobs.index', ['job' => $job->id]) }}"
                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                     <i class="fa-solid fa-list mr-2"></i>
                                     View All Applications
