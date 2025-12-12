@@ -18,7 +18,7 @@ class ApplicationController extends Controller
         // Application statistics
         $data = [
             'totalPending' => Application::pending()->count(),
-            'totalReviewed' => Application::underReviewed()->count(),
+            'totalReviewed' => Application::Reviewed()->count(),
             'totalAccepted' => Application::accepted()->count(),
             'totalRejected' => Application::rejected()->count(),
             'totalShortlisted' => Application::shortlisted()->count(),
@@ -26,37 +26,10 @@ class ApplicationController extends Controller
             'totalApplications' => Application::count(),
         ];
 
-        $applications = Application::with(['job', 'user'])
-            ->latest()
-            ->paginate(10);
+        $applications = Application::with(['job', 'user'])->latest()->paginate(10);
 
-        return view('applications.index', compact('applications','data'));
+        return view('applications.index', compact('applications', 'data'));
     }
-
-
-    public function adminApplicationIndex(Job $job)
-    {
-        // Application statistics
-        $data = [
-            'totalPending' => Application::pending()->count(),
-            'totalReviewed' => Application::reviewed()->count(),
-            'totalAccepted' => Application::accepted()->count(),
-            'totalRejected' => Application::rejected()->count(),
-            'totalApplications' => Application::count(),
-        ];
-        // Build query for applications
-        $applicationsQuery = Application::with(['job', 'job.company']);
-
-        // Filter by specific job if provided
-        // if ($job) {
-        //     $applicationsQuery->where('job_id', $job->id);
-        // }
-
-        $applications = $applicationsQuery->latest()->paginate(10);
-
-        return view('applications.index', compact( 'applications','job','data'));
-    }
-
 
     public function create(Job $job)
     {
@@ -165,31 +138,44 @@ class ApplicationController extends Controller
         return view('applications.show', compact('application'));
     }
 
-    public function adminApplicationShow(Application $application)
+    public function update(Request $request, Application $application)
     {
-        // Authorization - user can only view their own applications
-        if (auth()->user()->isAdmin()) {
-            abort(403, 'Unauthorized action.');
-        }
+        \Log::info('Status update request:', $request->all());
 
-        $application->load(['job.company', 'user']);
-
-        return view('applications.show', compact('application'));
-    }
-
-
-    public function adminApplicationUpdateStatus(Request $request, Application $application)
-    {
         $validated = $request->validate([
-            // 'status' => 'required|in:pending,under_review,shortlisted,interview,accepted,rejected',
-            'status' => 'required|in:pending,under_reviewed,accepted,rejected,shortlisted,interview',
-            'notes' => 'nullable|string',
+            'status' => 'required|in:pending,reviewed,accepted,rejected,shortlisted,interview',
         ]);
 
-        $application->update($validated);
+        try {
+            $oldStatus = $application->status;
+            $application->update(['status' => $validated['status']]);
 
-        return redirect()->route('admin.applicants.index', $application)
-            ->with('success', 'Application status updated successfully.');
+            \Log::info("Application {$application->id} status changed from {$oldStatus} to {$application->status}");
+
+            // Check if it's an AJAX request
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Status updated successfully!',
+                    'new_status' => $application->status,
+                ]);
+            }
+
+            return redirect()->back()
+                ->with('success', 'Application status updated successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Failed to update status: ' . $e->getMessage());
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update status: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->with('error', 'Failed to update status: ' . $e->getMessage());
+        }
     }
 
 
@@ -250,31 +236,6 @@ class ApplicationController extends Controller
         $application->load(['job', 'user']);
 
         return view('applications.employer-show', compact('application'));
-    }
-
-    public function updateStatus(Request $request, Application $application)
-    {
-        // Authorization - employer can only update status for their jobs
-        if ($application->job->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $validated = $request->validate([
-            'status' => 'required|in:reviewed,accepted,rejected',
-            'notes' => 'nullable|string|max:1000',
-        ]);
-
-        try {
-            $application->update([
-                'status' => $validated['status'],
-                'notes' => $validated['notes'] ?? $application->notes,
-            ]);
-
-            return back()->with('success', 'Application status updated successfully.');
-        } catch (\Exception $e) {
-            Log::error('Application status update error: ' . $e->getMessage());
-            return back()->with('error', 'Failed to update application status.');
-        }
     }
 
     // Method to view applications for a specific job

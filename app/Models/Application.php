@@ -36,7 +36,7 @@ class Application extends Model
     {
         return [
             'pending' => 'Pending',
-            'under_reviewed' => 'Reviewed',
+            'reviewed' => 'Reviewed',
             'accepted' => 'Accepted',
             'rejected' => 'Rejected',
             'shortlisted' => 'Shortlisted',
@@ -49,7 +49,7 @@ class Application extends Model
     {
         $badges = [
             'pending' => 'bg-yellow-100 text-yellow-800',
-            'under_reviewed' => 'bg-blue-100 text-blue-800',
+            'reviewed' => 'bg-blue-100 text-blue-800',
             'accepted' => 'bg-green-100 text-green-800',
             'rejected' => 'bg-red-100 text-red-800',
             'shortlisted' => 'bg-blue-100 text-blue-800',
@@ -88,9 +88,9 @@ class Application extends Model
         return $query->where('status', 'pending');
     }
 
-    public function scopeUnderReviewed($query)
+    public function scopeReviewed($query)
     {
-        return $query->where('status', 'under_reviewed');
+        return $query->where('status', 'reviewed');
     }
 
     public function scopeAccepted($query)

@@ -110,10 +110,10 @@ Route::group(['middleware' => ['auth']], function () {
 
         // Application Management
         Route::get('/applicants', [ApplicationController::class, 'index'])->name('applicants.index');
-        Route::get('/applicants/{application}', [ApplicationController::class, 'adminApplicantShow'])->name('applicants.show');
-        Route::get('/applicants/{application}/edit', [ApplicationController::class, 'adminApplicantEdit'])->name('applicants.edit');
-        Route::put('/applicants/{application}/status', [ApplicationController::class, 'adminApplicationUpdateStatus'])->name('applicants.update-status');
-        Route::delete('/applicants/{application}', [ApplicationController::class, 'adminApplicantDestroy'])->name('applicants.destroy');
+        Route::get('/applicants/{application}/edit', [ApplicationController::class, 'edit'])->name('applicants.edit');
+        Route::get('/applicants/{application}', [ApplicationController::class, 'show'])->name('applicants.show');
+        Route::put('/applicants/{application}/status', [ApplicationController::class, 'update'])->name('applicants.update-status');
+        Route::delete('/applicants/{application}', [ApplicationController::class, 'destroy'])->name('applicants.destroy');
         Route::get('/applicants/{application}/applicant-download', [ApplicationController::class, 'adminApplicantDownload'])->name('applicants.download');
 
         // Settings & Reports
